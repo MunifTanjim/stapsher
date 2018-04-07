@@ -1,0 +1,28 @@
+{
+  "name": "extrastatic",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node index.js",
+    "start:localtunnel": "node libs/localtunnel.js"
+  },
+  "dependencies": {
+    "@octokit/rest": "^15.2.6",
+    "body-parser": "^1.18.2",
+    "buffer-equal-constant-time": "^1.0.1",
+    "convict": "^4.2.0",
+    "cors": "^2.8.4",
+    "dotenv": "^5.0.1",
+    "dotenv-expand": "^4.2.0",
+    "express": "^4.16.3",
+    "firebase-admin": "^5.11.0",
+    "jsonwebtoken": "^8.2.0",
+    "lowdb": "^1.0.0",
+    "morgan": "^1.9.0",
+    "uuid": "^3.2.1",
+    "winston": "^2.4.1"
+  },
+  "devDependencies": {
+    "localtunnel": "^1.9.0"
+  }
+}
