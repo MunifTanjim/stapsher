@@ -1,5 +1,4 @@
-const app = _require('api/app')
-const http = require('http')
+const app = require('../app')
 
 class ExtraStaticServer {
   constructor(config) {

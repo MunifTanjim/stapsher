@@ -1,25 +1,28 @@
 const express = require('express')
 const path = require('path')
-const logger = require('morgan')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
-const { routes, routers } = require('./routes')
+const { routes, handlers } = require('./routes')
 
-const { errorCatcher, errorHandler } = require('./handlers/common')
+const { errorCatcher } = _require('libs/Logger/utils')
+const serverLogger = _require('libs/Logger/server')
 
 const app = express()
 
-app.use(logger('dev'))
+app.use(serverLogger())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(cors())
 
 Object.keys(routes).forEach(route => {
-  app.use(routes[route], routers[route])
+  app.use(routes[route], handlers[route])
 })
 
 app.use(errorCatcher(404, 'API_ENDPOINT_NOT_FOUND'))
-app.use(errorHandler)
+app.use((err, req, res, next) => {
+  res.status(err.status || 500)
+  res.send(err)
+})
 
 module.exports = app

@@ -8,6 +8,11 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 })
 
-const db = admin.firestore()
+const store = admin.firestore()
 
-module.exports = db
+const fieldValue = admin.firestore.FieldValue
+
+module.exports = {
+  store,
+  fieldValue
+}

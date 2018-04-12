@@ -1,3 +1,5 @@
+require('./env')
+
 const convict = require('convict')
 
 const configSchema = {
@@ -70,17 +72,19 @@ const configSchema = {
     }
   },
   paths: {
-    logs: {
+    cache: {
+      doc: 'Cache path',
+      format: String,
+      default: 'cache',
+      env: 'CACHE_PATH'
+    }
+  },
+  logs: {
+    path: {
       doc: 'Directory for server logs',
       format: String,
       default: 'logs',
       env: 'LOGS_PATH'
-    },
-    cache: {
-      doc: 'localtunnel subdomain for webhooks',
-      format: String,
-      default: 'cache',
-      env: 'CACHE_PATH'
     }
   }
 }

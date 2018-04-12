@@ -9,7 +9,7 @@ const adapter = new FileAsync(`${cachePath}/cache.json`)
 
 const cache = () =>
   low(adapter).then(db => {
-    db.defaults({ accounts: {}, installations: {}, repositories: {} }).write()
+    db.defaults({ installations: {}, repositories: {} }).write()
     return db
   })
 

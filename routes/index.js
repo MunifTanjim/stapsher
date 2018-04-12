@@ -3,9 +3,9 @@ const routes = {
   default: '/'
 }
 
-const routers = {
+const handlers = {
   v1: require('./v1'),
   default: require('./v1')
 }
 
-module.exports = { routes, routers }
+module.exports = { routes, handlers }

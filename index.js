@@ -1,6 +1,5 @@
-require('./configs/env')
+const config = require('./configs/server')
 
-const config = _require('configs/server')
 const Server = _require('libs/Server')
 const GitHubApp = _require('libs/GitHubApp')
 
