@@ -20,6 +20,7 @@
     "lodash": "^4.17.5",
     "lowdb": "^1.0.0",
     "morgan": "^1.9.0",
+    "parse-link-header": "^1.0.1",
     "uuid": "^3.2.1",
     "winston": "^3.0.0-rc4",
     "winston-daily-rotate-file": "^3.0.1"

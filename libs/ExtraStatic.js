@@ -1,16 +1,23 @@
 const uuidv1 = require('uuid/v1')
-const Github = require('./Github')
-const clientConfig = require('../configs/client')
+const Github = _require('libs/GitHub')
+// const clientConfig = _require('configs/client')
 
 class ExtraStaticApp {
   constructor({ username, repository, branch }) {
     this.uid = uuidv1()
-    this.github = new Github({ username, repository, branch })
+
+    this.github = new Github({
+      username,
+      repository,
+      branch
+    })
   }
 
-  getSiteConfig()
+  authenticate() {}
 
-  setCofigPath(configPath) {
+  getSiteConfig() {}
+
+  setConfigPath(configPath) {
     this.configPath = configPath
       ? configPath
       : {

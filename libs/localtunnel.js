@@ -1,6 +1,6 @@
 const localtunnel = require('localtunnel')
 
-const config = _require('configs/server')
+const config = require('../configs/server')
 
 const port = config.get('port')
 const subdomain = config.get('localtunnel.subdomain')

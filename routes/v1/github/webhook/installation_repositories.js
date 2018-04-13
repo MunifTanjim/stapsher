@@ -1,6 +1,6 @@
 const { normalizeRepos, getInstallation, getRepositories } = _require(
-  'libs/GitHubApp/payload'
-)
+  'libs/helpers/github'
+).payload
 
 const _ = require('lodash')
 
@@ -109,6 +109,7 @@ const updateLocalCache = async payload => {
 }
 
 const handler = payload => {
+  updateLocalCache(payload)
   updateFirebaseCache(payload)
 }
 

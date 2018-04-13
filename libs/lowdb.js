@@ -2,7 +2,7 @@ const low = require('lowdb')
 const FileAsync = require('lowdb/adapters/FileAsync')
 
 const path = require('path')
-const config = require('../../configs/server')
+const config = require('../configs/server')
 const cachePath = path.resolve(config.get('paths.cache'))
 
 const adapter = new FileAsync(`${cachePath}/cache.json`)
