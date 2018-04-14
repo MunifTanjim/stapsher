@@ -1,9 +1,9 @@
 const config = require('./configs/server')
+const app = require('./app')
+const logger = _require('libs/Logger')
 
-const Server = _require('libs/Server')
+const port = config.get('port')
 
-// const github = _require('libs/GitHub')
-
-const ExtraStaticServer = new Server(config)
-
-ExtraStaticServer.start()
+app.listen(port, () => {
+  logger.info(`Listening to port: ${port}`)
+})

@@ -1,7 +1,7 @@
 const path = require('path')
 const admin = require('firebase-admin')
 
-const config = require('../configs/server')
+const config = require('../../configs/server')
 
 const serviceAccount = _require(config.get('firebase.serviceAccount'))
 

@@ -6,7 +6,7 @@ const config = _require('configs/server')
 
 const logger = _require('libs/Logger')
 
-const apiLogger = () => {
+const requestLogger = () => {
   let env = config.get('env')
 
   if (env === 'development') {
@@ -27,4 +27,4 @@ const apiLogger = () => {
   }
 }
 
-module.exports = apiLogger
+module.exports = requestLogger

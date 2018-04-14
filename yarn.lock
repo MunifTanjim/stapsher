@@ -202,6 +202,10 @@
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
 
+"@tadashi/signature@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@tadashi/signature/-/signature-2.0.1.tgz#b9dcc78ac8efab39a3c769f7aab16f6a5c919469"
+
 "@types/google-cloud__storage@^1.1.7":
   version "1.1.7"
   resolved "https://registry.yarnpkg.com/@types/google-cloud__storage/-/google-cloud__storage-1.1.7.tgz#f4b568b163cce16314f32f954f5b7d5c9001fa86"
@@ -457,7 +461,7 @@ btoa-lite@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/btoa-lite/-/btoa-lite-1.0.0.tgz#337766da15801210fdd956c22e9c6891ab9d0337"
 
-buffer-equal-constant-time@1.0.1, buffer-equal-constant-time@^1.0.1:
+buffer-equal-constant-time@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/buffer-equal-constant-time/-/buffer-equal-constant-time-1.0.1.tgz#f8e71132f7ffe6e01a5c9697a4c6f3e48d5cc819"
 
@@ -1826,6 +1830,10 @@ lodash.isboolean@^3.0.3:
 lodash.isinteger@^4.0.4:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/lodash.isinteger/-/lodash.isinteger-4.0.4.tgz#619c0af3d03f8b04c31f5882840b77b11cd68343"
+
+lodash.isnull@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/lodash.isnull/-/lodash.isnull-3.0.0.tgz#fafbe59ea1dca27eed786534039dd84c2e07c56e"
 
 lodash.isnumber@^3.0.3:
   version "3.0.3"

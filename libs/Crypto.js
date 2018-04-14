@@ -1,22 +1,17 @@
 const crypto = require('crypto')
-const bufferEq = require('buffer-equal-constant-time')
 
-const config = _require('configs/server')
+const config = require('../configs/server')
 
 const privateKey = config.get('rsaPrivateKey')
-const githubWebhookSecret = config.get('githubApp.webhookSecret')
 
-const calculateGitHubPayloadSignature = githubPayload =>
-  `sha1=${crypto
-    .createHmac('sha1', githubWebhookSecret)
-    .update(JSON.stringify(githubPayload))
-    .digest('hex')}`
+const { verify } = require('@tadashi/signature')
 
-const verifyGitHubPayload = (githubPayload, receivedSignature) =>
-  bufferEq(
-    new Buffer(receivedSignature),
-    new Buffer(calculateGitHubPayloadSignature(githubPayload))
-  )
+const isString = require('lodash.isstring')
+
+const verifySignature = (signature, payload, secret) => {
+  payload = isString(payload) ? payload : JSON.stringify(payload)
+  return verify(signature, payload, secret)
+}
 
 const encrypt = plainText => {
   try {
@@ -45,5 +40,5 @@ const decrypt = encryptedText => {
 module.exports = {
   encrypt,
   decrypt,
-  verifyGitHubPayload
+  verifySignature
 }

@@ -2,9 +2,11 @@ const fs = require('fs')
 const path = require('path')
 const jwt = require('jsonwebtoken')
 const OctokitREST = require('@octokit/rest')
-const config = require('../configs/server')
+const config = require('../../configs/server')
 
-const { fetchInstallationId } = require('./helpers/github').app
+const { ServerError } = _require('libs/Error')
+
+const { fetchInstallationId } = require('./helpers').app
 
 class GitHub {
   constructor(info) {
@@ -48,21 +50,22 @@ class GitHub {
     }
   }
 
-  async getInstallationID() {
+  async setInstallationID() {
     try {
-      let id = await fetchInstallationId(this.info, this.authAsApp)
+      this.installation_id = await fetchInstallationId(
+        this.info,
+        this.authAsApp
+      )
 
-      this.installation_id = installation_id
-
-      return id
+      return this.installation_id
     } catch (err) {
       throw err
     }
   }
 
-  async getInstallationToken() {
+  async setInstallationToken() {
     try {
-      let installation_id = await this.getInstallationID()
+      let installation_id = await this.setInstallationID()
 
       let { data } = await this.api.apps.createInstallationToken({
         installation_id
@@ -70,7 +73,7 @@ class GitHub {
 
       this.installation_token = data
 
-      return data
+      return this.installation_token
     } catch (err) {
       throw err
     }
@@ -78,7 +81,7 @@ class GitHub {
 
   async authAsInstallation() {
     try {
-      let { token } = await this.getInstallationToken()
+      let { token } = await this.setInstallationToken()
 
       this.api.authenticate({
         type: 'token',
