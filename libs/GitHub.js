@@ -23,34 +23,40 @@ class GitHub {
       },
       baseUrl: 'https://api.github.com'
     })
-
-    this.authenticateAsApp()
   }
 
-  authenticateAsApp() {
-    this.api.authenticate({
-      type: 'integration',
-      token: jwt.sign(
-        {
-          iat: Math.floor(new Date() / 1000), // issued at time
-          exp: Math.floor(new Date() / 1000) + 60, // expiration time
-          iss: this.id // integration's github id
-        },
-        this.privateKey,
-        {
-          algorithm: 'RS256'
-        }
-      )
-    })
+  async authAsApp() {
+    try {
+      this.api.authenticate({
+        type: 'integration',
+        token: jwt.sign(
+          {
+            iat: Math.floor(new Date() / 1000), // issued at time
+            exp: Math.floor(new Date() / 1000) + 60, // expiration time
+            iss: this.id // integration's github id
+          },
+          this.privateKey,
+          {
+            algorithm: 'RS256'
+          }
+        )
+      })
+
+      return this.api
+    } catch (err) {
+      throw err
+    }
   }
 
   async getInstallationID() {
     try {
-      let id = await fetchInstallationId(this.info, this.api)
+      let id = await fetchInstallationId(this.info, this.authAsApp)
 
-      return Promise.resolve(id)
+      this.installation_id = installation_id
+
+      return id
     } catch (err) {
-      console.error(err)
+      throw err
     }
   }
 
@@ -58,37 +64,69 @@ class GitHub {
     try {
       let installation_id = await this.getInstallationID()
 
-      this.installation_id = installation_id
-
       let { data } = await this.api.apps.createInstallationToken({
         installation_id
       })
 
-      return Promise.resolve(data)
+      this.installation_token = data
+
+      return data
     } catch (err) {
-      console.error(err)
+      throw err
     }
   }
 
-  async authenticateAsInstallation() {
+  async authAsInstallation() {
     try {
       let { token } = await this.getInstallationToken()
+
+      this.api.authenticate({
+        type: 'token',
+        token
+      })
+
+      return this.api
     } catch (err) {
-      console.error(err)
+      throw err
     }
   }
 
-  async getInstallations() {
+  async readFile(path) {
     try {
-      let response = await this.api.apps.getInstallations()
-      return response.data
+      let res = await this.api.repos.getContent({
+        user: this.info.username,
+        repo: this.info.repository,
+        ref: this.info.branch,
+        path
+      })
+
+      let content = Buffer.from(res.content, 'base64').toString()
+
+      content = JSON.parse(content)
+
+      return content
     } catch (err) {
-      console.error(err)
+      throw err
+    }
+  }
+
+  async writeFile(filePath, data, branch, commitTitle) {
+    branch = branch || this.info.branch
+    commitTitle = commitTitle || 'Add Staticman file'
+    try {
+      await this.api.repos.createFile({
+        user: this.info.username,
+        repo: this.info.repository,
+        path: filePath,
+        content: Buffer.from(data).toString('base64'),
+        message: commitTitle,
+        branch: branch
+      })
+    } catch (err) {
+      throw err
     }
   }
 }
-
-// LET GITHUBAPP LIVE LONG AND LET INSTALLATIONS DIE
 
 // let github = new GitHub({
 //   username: 'MunifTanjim',

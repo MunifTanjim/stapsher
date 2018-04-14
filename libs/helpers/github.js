@@ -44,8 +44,10 @@ const fetchInstallationIdFromStore = async ({ username, repository }) => {
 
     let id = docs.length ? docs[0].data().installation_id : null
 
-    return Promise.resolve(id)
-  } catch (err) {}
+    return id
+  } catch (err) {
+    throw err
+  }
 }
 const fetchInstallationIdFromCache = async ({ username, repository }) => {
   logger.verbose('Getting installation_id from lowdb Cache')
@@ -60,14 +62,18 @@ const fetchInstallationIdFromCache = async ({ username, repository }) => {
         .get('installation_id')
         .value() || null
 
-    return Promise.resolve(id)
-  } catch (err) {}
+    return id
+  } catch (err) {
+    throw err
+  }
 }
 
-const fetchInstallationIdFromGitHub = async ({ username }, api) => {
+const fetchInstallationIdFromGitHub = async ({ username }, authAsGithubApp) => {
   logger.verbose('Getting installation_id from GitHub API')
 
   try {
+    let api = await authAsGithubApp()
+
     let page = 1,
       hasNext = true
 
@@ -77,7 +83,7 @@ const fetchInstallationIdFromGitHub = async ({ username }, api) => {
       })
 
       for ({ id, account } of data) {
-        if (account.login === username) return Promise.resolve(id)
+        if (account.login === username) return id
       }
 
       if (meta.link) {
@@ -87,28 +93,30 @@ const fetchInstallationIdFromGitHub = async ({ username }, api) => {
       } else hasNext = false
     }
 
-    return Promise.resolve(null)
-  } catch (err) {}
+    return null
+  } catch (err) {
+    throw err
+  }
 }
 
-const fetchInstallationId = async (info, api) => {
+const fetchInstallationId = async (info, authAsGithubApp) => {
   logger.verbose('Getting installation_id')
 
   let id
 
   try {
     id = await fetchInstallationIdFromCache(info)
-    if (Boolean(id)) return Promise.resolve(id)
+    if (Boolean(id)) return id
 
     id = await fetchInstallationIdFromStore(info)
-    if (Boolean(id)) return Promise.resolve(id)
+    if (Boolean(id)) return id
 
-    id = await fetchInstallationIdFromGitHub(info, api)
-    if (Boolean(id)) return Promise.resolve(id)
+    id = await fetchInstallationIdFromGitHub(info, authAsGithubApp)
+    if (Boolean(id)) return id
 
-    return Promise.resolve(null)
+    throw new Error('APP_NOT_INSTALLED')
   } catch (err) {
-    return Promise.reject(err)
+    throw err
   }
 }
 
