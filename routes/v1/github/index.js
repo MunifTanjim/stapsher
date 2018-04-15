@@ -11,11 +11,9 @@ const installationRepositoriesHandler = require('./webhook/installation_reposito
 const webhookSecret = config.get('githubApp.webhookSecret')
 
 router.post('/webhook', (req, res, next) => {
-  let respondError = code => res.status(400).send({ status: 400, code: code })
+  let respondError = message => res.status(400).send({ message })
 
   let { method, headers, body: payload } = req
-
-  if (method !== 'POST') return next()
 
   let id = headers['x-github-delivery']
   if (!id) return respondError('MISSING_DELIVERY_ID')
@@ -27,10 +25,7 @@ router.post('/webhook', (req, res, next) => {
   if (webhookSecret && !signature)
     return respondError('MISSING_PAYLOAD_SIGNATURE')
 
-  if (
-    webhookSecret &&
-    !verifySignature(signature, JSON.stringify(payload), webhookSecret)
-  )
+  if (webhookSecret && !verifySignature(signature, payload, webhookSecret))
     return respondError('ERROR_VERIFYING_PAYLOAD_SIGNATURE')
 
   switch (event) {

@@ -14,7 +14,12 @@ const requestLogger = () => {
       stream: { write: msg => logger.info(msg.trim()) }
     })
   } else if (env === 'production' || env === 'staging') {
-    let logDirectory = path.join(__dirname, '../..', config.get('logs.path'))
+    let logDirectory = path.join(
+      __dirname,
+      '../..',
+      config.get('logs.path'),
+      'requests'
+    )
 
     fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory)
 

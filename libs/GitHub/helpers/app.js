@@ -53,7 +53,7 @@ const fetchInstallationId = async (info, authAsGithubApp) => {
     id = await fetchInstallationIdFromGitHub(info, authAsGithubApp)
     if (!isNull(id)) return id
 
-    throw new ResponseError('GITHUB_APP_NOT_INSTALLED')
+    throw new ResponseError('GITHUB_APP_NOT_INSTALLED', 400)
   } catch (err) {
     throw err
   }

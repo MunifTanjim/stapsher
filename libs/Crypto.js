@@ -16,7 +16,7 @@ const verifySignature = (signature, payload, secret) => {
 const encrypt = plainText => {
   try {
     let encryptedText = crypto
-      .publicEncrypt(privateKey, new Buffer(plainText))
+      .publicEncrypt(privateKey, Buffer.from(plainText))
       .toString('base64')
 
     return encryptedText
@@ -28,7 +28,7 @@ const encrypt = plainText => {
 const decrypt = encryptedText => {
   try {
     let decryptedText = crypto
-      .privateDecrypt(privateKey, new Buffer(encryptedText, 'base64'))
+      .privateDecrypt(privateKey, Buffer.from(encryptedText, 'base64'))
       .toString('utf8')
 
     return decryptedText

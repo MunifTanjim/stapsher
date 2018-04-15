@@ -4,18 +4,15 @@ const jwt = require('jsonwebtoken')
 const OctokitREST = require('@octokit/rest')
 const config = require('../../configs/server')
 
-const { ServerError } = _require('libs/Error')
+const { ResponseError } = _require('libs/Error')
 
-const { fetchInstallationId } = require('./helpers').app
+const { fetchInstallationId } = require('./helpers/app')
 
 class GitHub {
-  constructor(info) {
-    this.info = info || {}
+  constructor(info = {}) {
+    this.info = info
 
     this.id = config.get('githubApp.id')
-    this.privateKey = fs.readFileSync(
-      path.resolve(config.get('githubApp.privateKey'))
-    )
 
     this.api = OctokitREST({
       timeout: 5000,
@@ -27,8 +24,22 @@ class GitHub {
     })
   }
 
-  async authAsApp() {
+  async _getPrivateKey() {
     try {
+      let privateKeyPath = path.resolve(config.get('githubApp.privateKey'))
+
+      this.privateKey = await fs.readFile(privateKeyPath)
+
+      return this.privateKey
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async _authAsApp() {
+    try {
+      let privateKey = await this._getPrivateKey()
+
       this.api.authenticate({
         type: 'integration',
         token: jwt.sign(
@@ -37,7 +48,7 @@ class GitHub {
             exp: Math.floor(new Date() / 1000) + 60, // expiration time
             iss: this.id // integration's github id
           },
-          this.privateKey,
+          privateKey,
           {
             algorithm: 'RS256'
           }
@@ -50,11 +61,11 @@ class GitHub {
     }
   }
 
-  async setInstallationID() {
+  async _getInstallationID() {
     try {
       this.installation_id = await fetchInstallationId(
         this.info,
-        this.authAsApp
+        this._authAsApp
       )
 
       return this.installation_id
@@ -63,9 +74,9 @@ class GitHub {
     }
   }
 
-  async setInstallationToken() {
+  async getInstallationToken() {
     try {
-      let installation_id = await this.setInstallationID()
+      let installation_id = await this._getInstallationID()
 
       let { data } = await this.api.apps.createInstallationToken({
         installation_id
@@ -81,14 +92,14 @@ class GitHub {
 
   async authAsInstallation() {
     try {
-      let { token } = await this.setInstallationToken()
+      let { token } = await this.getInstallationToken()
 
       this.api.authenticate({
         type: 'token',
         token
       })
 
-      return this.api
+      return true
     } catch (err) {
       throw err
     }
@@ -96,20 +107,22 @@ class GitHub {
 
   async readFile(path) {
     try {
-      let res = await this.api.repos.getContent({
+      let blob = await this.api.repos.getContent({
         user: this.info.username,
         repo: this.info.repository,
         ref: this.info.branch,
         path
       })
 
-      let content = Buffer.from(res.content, 'base64').toString()
+      let content = Buffer.from(blob.content, 'base64').toString()
 
       content = JSON.parse(content)
 
       return content
     } catch (err) {
-      throw err
+      if (err instanceof SyntaxError)
+        throw new ResponseError('SITE_CONFIG_PARSE_FAILED', 400, err)
+      else throw err
     }
   }
 

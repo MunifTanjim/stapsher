@@ -4,7 +4,12 @@ const DailyRotateFile = require('winston-daily-rotate-file')
 
 const config = _require('configs/server')
 
-const logDirectory = path.join(__dirname, '../..', config.get('logs.path'))
+const logDirectory = path.join(
+  __dirname,
+  '../..',
+  config.get('logs.path'),
+  'activities'
+)
 
 const logger = winston.createLogger({
   format: winston.format.combine(
