@@ -2,44 +2,40 @@ const router = require('express').Router()
 
 const config = _require('configs/server')
 
-const { verifySignature } = _require('libs/Crypto')
+const { webhooksHandler } = _require('libs/GitHub/webhooks')
 
-const installationHandler = require('./webhook/installation')
+router.post('/webhook', webhooksHandler)
 
-const installationRepositoriesHandler = require('./webhook/installation_repositories')
+// (req, res, next) => {
+//   let respondError = message => res.status(400).send({ message })
 
-const webhookSecret = config.get('githubApp.webhookSecret')
+//   let { method, headers, body: payload } = req
 
-router.post('/webhook', (req, res, next) => {
-  let respondError = message => res.status(400).send({ message })
+//   let id = headers['x-github-delivery']
+//   if (!id) return respondError('MISSING_DELIVERY_ID')
 
-  let { method, headers, body: payload } = req
+//   let event = headers['x-github-event']
+//   if (!event) return respondError('MISSING_EVENT')
+//   let signature = headers['x-hub-signature'] || ''
 
-  let id = headers['x-github-delivery']
-  if (!id) return respondError('MISSING_DELIVERY_ID')
+//   if (webhookSecret && !signature)
+//     return respondError('MISSING_PAYLOAD_SIGNATURE')
 
-  let event = headers['x-github-event']
-  if (!event) return respondError('MISSING_EVENT')
-  let signature = headers['x-hub-signature'] || ''
+//   if (webhookSecret && !verifySignature(signature, payload, webhookSecret))
+//     return respondError('ERROR_VERIFYING_PAYLOAD_SIGNATURE')
 
-  if (webhookSecret && !signature)
-    return respondError('MISSING_PAYLOAD_SIGNATURE')
+//   switch (event) {
+//     case 'installation':
+//       installationHandler(payload)
+//       break
+//     case 'installation_repositories':
+//       installationRepositoriesHandler(payload)
+//       break
+//     default:
+//       break
+//   }
 
-  if (webhookSecret && !verifySignature(signature, payload, webhookSecret))
-    return respondError('ERROR_VERIFYING_PAYLOAD_SIGNATURE')
-
-  switch (event) {
-    case 'installation':
-      installationHandler(payload)
-      break
-    case 'installation_repositories':
-      installationRepositoriesHandler(payload)
-      break
-    default:
-      break
-  }
-
-  res.status(200).send({ sucess: true })
-})
+//   res.status(200).send({ sucess: true })
+// }
 
 module.exports = router

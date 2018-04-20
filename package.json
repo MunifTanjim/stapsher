@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@octokit/rest": "^15.2.6",
+    "@octokit/webhooks": "^4.0.0",
     "@tadashi/signature": "^2.0.1",
     "body-parser": "^1.18.2",
     "convict": "^4.2.0",
