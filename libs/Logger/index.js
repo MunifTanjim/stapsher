@@ -1,8 +1,10 @@
+const config = require('../../configs/server')
+
 const path = require('path')
 const winston = require('winston')
 const DailyRotateFile = require('winston-daily-rotate-file')
 
-const config = _require('configs/server')
+const env = config.get('env')
 
 const logDirectory = path.join(
   __dirname,
@@ -11,26 +13,35 @@ const logDirectory = path.join(
   'activities'
 )
 
-const logger = winston.createLogger({
-  format: winston.format.combine(
-    winston.format.timestamp({ format: 'YYYYMMDDHHmmss' }),
-    winston.format.colorize(),
-    winston.format.printf(
-      info => `${info.timestamp} [${info.level}]: ${info.message}`
-    )
-  )
-})
-
-logger.add(new winston.transports.Console({ level: 'silly' }))
+const logger = winston.createLogger()
 
 logger.add(
   new DailyRotateFile({
-    datePattern: 'YYYYMMDDHH',
+    level: 'info',
+    format: winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.json()
+    ),
+    datePattern: 'YYYY-MM-DD',
     dirname: logDirectory,
     filename: `%DATE%.${config.get('env')}.log`,
-    format: winston.format.uncolorize(),
     maxSize: '20m'
   })
 )
+
+if (['development', 'test'].includes(env)) {
+  logger.add(
+    new winston.transports.Console({
+      level: 'silly',
+      format: winston.format.combine(
+        winston.format.timestamp({ format: 'YYYYMMDDHHmmss' }),
+        winston.format.colorize(),
+        winston.format.printf(
+          info => `${info.timestamp} [${info.level}]: ${info.message}`
+        )
+      )
+    })
+  )
+}
 
 module.exports = logger

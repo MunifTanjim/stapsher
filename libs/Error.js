@@ -1,3 +1,5 @@
+const logger = require('../libs/Logger')
+
 class extraStaticError extends Error {
   constructor(message) {
     super(message)
@@ -13,22 +15,24 @@ class ResponseError extends extraStaticError {
   }
 }
 
-const respondError = (errorCode, statusCode, cause) => (req, res, next) =>
-  next(new ResponseError(errorCode, statusCode, cause))
+const respondError = (errorCode, statusCode, cause) => {
+  throw new ResponseError(errorCode, statusCode, cause)
+}
 
-const notFoundErrorHandler = respondError('API_ENDPOINT_NOT_FOUND', 404)
+const notFoundErrorHandler = (req, res, next) =>
+  respondError('API_ENDPOINT_NOT_FOUND', 404, { path: req.url })
 
 const errorHandler = (err, req, res, next) => {
-  let { message: code, statusCode = 500, cause } = err
+  let { message, statusCode = 500, cause } = err
 
-  let errorObject = {
-    code,
-    info: cause instanceof Error ? cause.message : cause,
-    statusCode
-  }
+  let code = err instanceof ResponseError ? message : 'SERVER_PROBLEM'
+  let data = cause instanceof Error ? cause.message : cause
 
-  res.status(statusCode)
-  res.send(errorObject)
+  let errorObject = { code, data, statusCode }
+
+  res.status(statusCode).send(errorObject)
+
+  logger.error(err.message, { ...err, path: req.url })
 }
 
 module.exports = {

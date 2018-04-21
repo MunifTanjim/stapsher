@@ -1,19 +1,18 @@
+const config = require('../../configs/server')
+
 const fs = require('fs')
 const path = require('path')
 const morgan = require('morgan')
-
-const config = _require('configs/server')
+const rfs = require('rotating-file-stream')
 
 const logger = _require('libs/Logger')
 
 const requestLogger = () => {
   let env = config.get('env')
 
-  if (env === 'development') {
-    return morgan('dev', {
-      stream: { write: msg => logger.info(msg.trim()) }
-    })
-  } else if (env === 'production' || env === 'staging') {
+  if (['development', 'test'].includes(env)) {
+    return morgan('dev')
+  } else {
     let logDirectory = path.join(
       __dirname,
       '../..',
@@ -23,12 +22,14 @@ const requestLogger = () => {
 
     fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory)
 
-    let apiLogStream = rfs(`api.${env}.log`, {
+    let logStream = rfs(`${env}.log`, {
       interval: '1d',
-      path: logDirectory
+      path: logDirectory,
+      size: '20M',
+      rotationTime: true
     })
 
-    return morgan('common', { stream: apiLogStream })
+    return morgan('common', { stream: logStream })
   }
 }
 
