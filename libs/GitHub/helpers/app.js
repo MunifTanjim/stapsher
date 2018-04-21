@@ -8,7 +8,7 @@ const { fetchInstallationIdFromStore } = _require('libs/Firebase/helpers')
 const { fetchInstallationIdFromCache } = _require('libs/lowdb/helpers')
 
 const fetchInstallationIdFromGitHub = async ({ username }, authAsGithubApp) => {
-  logger.verbose('Getting installation_id from GitHub API')
+  logger.verbose('Fetching installation_id from GitHub API')
 
   try {
     let api = await authAsGithubApp()
@@ -39,7 +39,7 @@ const fetchInstallationIdFromGitHub = async ({ username }, authAsGithubApp) => {
 }
 
 const fetchInstallationId = async (info, authAsGithubApp) => {
-  logger.verbose('Getting installation_id')
+  logger.verbose('Fetching installation_id')
 
   let id
 

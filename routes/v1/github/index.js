@@ -4,7 +4,9 @@ const config = _require('configs/server')
 
 const { webhooksHandler } = _require('libs/GitHub/webhooks')
 
-router.post('/webhook', webhooksHandler)
+const asyncHandler = require('express-async-handler')
+
+router.post('/webhook', asyncHandler(webhooksHandler))
 
 // (req, res, next) => {
 //   let respondError = message => res.status(400).send({ message })

@@ -7,6 +7,8 @@ const { normalizeRepos } = _require('libs/GitHub/helpers/payload')
 const logger = _require('libs/Logger')
 
 const createInstallationOnStore = async (installation, repos) => {
+  logger.verbose('Creating installation on FireStore')
+
   let repoIDs = _.map(repos, 'id')
   let flattenedRepos = _.keyBy(normalizeRepos(repos, installation.id), 'id')
 
@@ -31,6 +33,8 @@ const createInstallationOnStore = async (installation, repos) => {
 }
 
 const deleteInstallationFromStore = async (installation, repos) => {
+  logger.verbose('Deleting installation from FireStore')
+
   try {
     let batch = store.batch()
 
@@ -52,6 +56,8 @@ const deleteInstallationFromStore = async (installation, repos) => {
 }
 
 const addReposToStore = async (installation, repos) => {
+  logger.verbose('Adding repositories to FireStore')
+
   let repoIDs = _.map(repos, 'id')
   let flattenedRepos = _.keyBy(normalizeRepos(repos, installation.id), 'id')
 
@@ -82,6 +88,8 @@ const addReposToStore = async (installation, repos) => {
 }
 
 const removeReposFromStore = async (installation, repos) => {
+  logger.verbose('Removing repositories from FireStore')
+
   let repoIDs = _.map(repos, 'id')
 
   try {

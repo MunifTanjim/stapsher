@@ -20,7 +20,7 @@ const respondError = (errorCode, statusCode, cause) => {
 }
 
 const notFoundErrorHandler = (req, res, next) =>
-  respondError('API_ENDPOINT_NOT_FOUND', 404, { path: req.url })
+  respondError('API_ENDPOINT_NOT_FOUND', 404)
 
 const errorHandler = (err, req, res, next) => {
   let { message, statusCode = 500, cause } = err

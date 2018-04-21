@@ -5,5 +5,5 @@ const logger = _require('libs/Logger')
 const port = config.get('port')
 
 app.listen(port, () => {
-  logger.info(`Listening to port: ${port}`)
+  logger.info(`Server started! Listening to port: ${port}`)
 })

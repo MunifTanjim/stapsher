@@ -7,6 +7,8 @@ const { normalizeRepos } = _require('libs/GitHub/helpers/payload')
 const logger = _require('libs/Logger')
 
 const createInstallationOnCache = async (installation, repos) => {
+  logger.verbose('Creating installation on lowdb Cache')
+
   let flattenedRepos = _.keyBy(normalizeRepos(repos, installation.id), 'id')
 
   try {
@@ -31,6 +33,8 @@ const createInstallationOnCache = async (installation, repos) => {
 }
 
 const deleteInstallationFromCache = async (installation, repos) => {
+  logger.verbose('Deleting installation from lowdb Cache')
+
   try {
     let db = await cache()
 
@@ -58,6 +62,8 @@ const deleteInstallationFromCache = async (installation, repos) => {
 }
 
 const addReposToCache = async (installation, repos) => {
+  logger.verbose('Adding repositories to lowdb Cache')
+
   try {
     let db = await cache()
 
@@ -78,6 +84,8 @@ const addReposToCache = async (installation, repos) => {
 }
 
 const removeReposFromCache = async (installation, repos) => {
+  logger.verbose('Removing repositories from lowdb Cache')
+
   let repoIDs = _.map(repos, 'id')
 
   try {
