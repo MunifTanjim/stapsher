@@ -17,10 +17,10 @@ const webhookErrorDict = {
   }
 }
 
-const webhookErrorInfo = ({ message }) =>
+const errorInfo = ({ message }) =>
   webhookErrorDict[message] || {
     code: 'WEBHOOK_HANDLER_ERROR',
     statusCode: 400
   }
 
-module.exports = { webhookErrorInfo }
+module.exports = { errorInfo }

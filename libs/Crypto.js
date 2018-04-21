@@ -4,15 +4,6 @@ const config = require('../configs/server')
 
 const privateKey = config.get('rsaPrivateKey')
 
-const { verify } = require('@tadashi/signature')
-
-const isString = require('lodash.isstring')
-
-const verifySignature = (signature, payload, secret) => {
-  payload = isString(payload) ? payload : JSON.stringify(payload)
-  return verify(signature, payload, secret)
-}
-
 const encrypt = plainText => {
   try {
     let encryptedText = crypto
@@ -39,6 +30,5 @@ const decrypt = encryptedText => {
 
 module.exports = {
   encrypt,
-  decrypt,
-  verifySignature
+  decrypt
 }

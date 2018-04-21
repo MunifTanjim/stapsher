@@ -4,8 +4,8 @@ const parseLinkHeader = require('parse-link-header')
 const cache = _require('libs/lowdb')
 const logger = _require('libs/Logger')
 const { ResponseError } = _require('libs/Error')
-const { fetchInstallationIdFromStore } = _require('libs/Firebase/helpers')
-const { fetchInstallationIdFromCache } = _require('libs/lowdb/helpers')
+const { fetchInstallationIdFromStore } = _require('libs/Firebase/actions')
+const { fetchInstallationIdFromCache } = _require('libs/lowdb/actions')
 
 const fetchInstallationIdFromGitHub = async ({ username }, authAsGithubApp) => {
   logger.verbose('Fetching installation_id from GitHub API')
@@ -41,9 +41,9 @@ const fetchInstallationIdFromGitHub = async ({ username }, authAsGithubApp) => {
 const fetchInstallationId = async (info, authAsGithubApp) => {
   logger.verbose('Fetching installation_id')
 
-  let id
-
   try {
+    let id
+
     id = await fetchInstallationIdFromCache(info)
     if (!isNull(id)) return id
 
@@ -53,7 +53,7 @@ const fetchInstallationId = async (info, authAsGithubApp) => {
     id = await fetchInstallationIdFromGitHub(info, authAsGithubApp)
     if (!isNull(id)) return id
 
-    throw new ResponseError('GITHUB_APP_NOT_INSTALLED', 400)
+    throw new ResponseError('GITHUB_APP_NOT_INSTALLED', 400, info)
   } catch (err) {
     throw err
   }

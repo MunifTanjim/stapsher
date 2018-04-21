@@ -1,10 +1,8 @@
 const _ = require('lodash')
 
-const cache = require('../lowdb')
-
-const { normalizeRepos } = _require('libs/GitHub/helpers/payload')
-
+const cache = _require('libs/lowdb')
 const logger = _require('libs/Logger')
+const { normalizeRepos } = _require('libs/GitHub/webhooks/transformer')
 
 const createInstallationOnCache = async (installation, repos) => {
   logger.verbose('Creating installation on lowdb Cache')
@@ -128,10 +126,40 @@ const fetchInstallationIdFromCache = async ({ username, repository }) => {
   }
 }
 
+const addRepoToCache = async ({ installation_id, ...repo }) => {
+  logger.info('Adding repository to lowdb Cache')
+
+  try {
+    let db = await cache()
+
+    if (!db.has(`installations[${installation_id}]`).value()) {
+      db
+        .set(`installations[${installation_id}]`, {
+          installation: { id: installation_id, account: {} },
+          repositories: {}
+        })
+        .write()
+    }
+
+    db
+      .get(`installations[${installation_id}]`)
+      .set(`repositories[${repo.id}]`, repo)
+      .write()
+
+    db
+      .get('repositories')
+      .set(repo.id, { ...repo, installation_id })
+      .write()
+  } catch (err) {
+    throw err
+  }
+}
+
 module.exports = {
   createInstallationOnCache,
   deleteInstallationFromCache,
   addReposToCache,
   removeReposFromCache,
-  fetchInstallationIdFromCache
+  fetchInstallationIdFromCache,
+  addRepoToCache
 }

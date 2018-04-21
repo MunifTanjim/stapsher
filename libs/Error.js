@@ -26,13 +26,16 @@ const errorHandler = (err, req, res, next) => {
   let { message, statusCode = 500, cause } = err
 
   let code = err instanceof ResponseError ? message : 'SERVER_PROBLEM'
-  let data = cause instanceof Error ? cause.message : cause
+  let info = cause instanceof Error ? cause.message : cause
 
-  let errorObject = { code, data, statusCode }
+  let errorObject = { code, info, statusCode }
 
   res.status(statusCode).send(errorObject)
 
-  logger.error(err.message, { ...err, path: req.url })
+  logger.error(message, {
+    ...(cause instanceof Error ? { info: cause.message, ...cause } : cause),
+    path: req.url
+  })
 }
 
 module.exports = {

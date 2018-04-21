@@ -1,12 +1,14 @@
-const fs = require('fs')
 const path = require('path')
+const { readFile } = require('fs')
+const { promisify } = require('util')
 const jwt = require('jsonwebtoken')
 const OctokitREST = require('@octokit/rest')
+
 const config = require('../../configs/server')
 
 const { ResponseError } = _require('libs/Error')
 
-const { fetchInstallationId } = require('./helpers/app')
+const { fetchInstallationId } = _require('libs/GitHub/actions')
 
 class GitHub {
   constructor(info = {}) {
@@ -28,7 +30,7 @@ class GitHub {
     try {
       let privateKeyPath = path.resolve(config.get('githubApp.privateKey'))
 
-      this.privateKey = await fs.readFile(privateKeyPath)
+      this.privateKey = await promisify(readFile)(privateKeyPath)
 
       return this.privateKey
     } catch (err) {
@@ -65,7 +67,7 @@ class GitHub {
     try {
       this.installation_id = await fetchInstallationId(
         this.info,
-        this._authAsApp
+        this._authAsApp.bind(this)
       )
 
       return this.installation_id
@@ -143,20 +145,5 @@ class GitHub {
     }
   }
 }
-
-// let github = new GitHub({
-//   username: 'MunifTanjim',
-//   repository: 'hugotest',
-//   branch: 'extrastatic'
-// })
-
-// github
-//   .getInstallationToken()
-//   .then(data => {
-//     console.log(data)
-//   })
-//   .catch(err => {
-//     console.log(err)
-//   })
 
 module.exports = GitHub

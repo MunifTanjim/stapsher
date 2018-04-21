@@ -2,9 +2,11 @@ const _ = require('lodash')
 
 const { store, fieldValue } = require('../Firebase')
 
-const { normalizeRepos } = _require('libs/GitHub/helpers/payload')
+const { normalizeRepos } = require('../../libs/GitHub/webhooks/transformer')
 
-const logger = _require('libs/Logger')
+const logger = require('../../libs/Logger')
+
+const { addRepoToCache } = require('../../libs/lowdb/actions')
 
 const createInstallationOnStore = async (installation, repos) => {
   logger.verbose('Creating installation on FireStore')
@@ -126,7 +128,17 @@ const fetchInstallationIdFromStore = async ({ username, repository }) => {
       .where('full_name', '==', `${username}/${repository}`)
       .get()
 
-    let id = docs.length ? docs[0].data().installation_id : null
+    let id = null
+
+    if (docs.length) {
+      let repo = docs[0].data()
+
+      id = repo.installation_id
+
+      addRepoToCache(repo).catch(err => {
+        logger.error('addRepoToCache failure', err)
+      })
+    }
 
     return id
   } catch (err) {

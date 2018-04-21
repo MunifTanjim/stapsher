@@ -5,69 +5,61 @@ const OctokitWebhooks = require('@octokit/webhooks')
 const logger = _require('libs/Logger')
 const { respondError } = _require('libs/Error')
 
-const { getInstallation, getRepositories } = _require(
-  'libs/GitHub/helpers/payload'
-)
 const {
   createInstallationOnCache,
   deleteInstallationFromCache,
   addReposToCache,
   removeReposFromCache
-} = _require('libs/lowdb/helpers')
+} = _require('libs/lowdb/actions')
 const {
   createInstallationOnStore,
   deleteInstallationFromStore,
   addReposToStore,
   removeReposFromStore
-} = _require('libs/Firebase/helpers')
+} = _require('libs/Firebase/actions')
 
-const { webhookErrorInfo } = require('./lib_errors')
+const transformer = require('./transformer')
+const { errorInfo } = require('./errors')
 
 const webhookSecret = config.get('githubApp.webhookSecret')
 
 const webhooks = new OctokitWebhooks({
   secret: webhookSecret,
-  transform: async event => event
+  transform: transformer
 })
 
 webhooks.on('*', async ({ id, name, payload }) => {
   logger.info(`GitHub Webhook received: ${name}`, { id, name })
 })
 
-webhooks.on('installation.created', async ({ id, name, payload }) => {
-  let installation = getInstallation(payload)
-  let repos = getRepositories(payload)
+webhooks.on(
+  'installation.created',
+  async ({ id, name, payload: { installation, repositories } }) => {
+    await createInstallationOnCache(installation, repositories)
+    await createInstallationOnStore(installation, repositories)
+  }
+)
 
-  await createInstallationOnCache(installation, repos)
-  await createInstallationOnStore(installation, repos)
-})
-
-webhooks.on('installation.deleted', async ({ id, name, payload }) => {
-  let installation = getInstallation(payload)
-  let repos = getRepositories(payload)
-
-  await deleteInstallationOnCache(installation, repos)
-  await deleteInstallationOnStore(installation, repos)
-})
+webhooks.on(
+  'installation.deleted',
+  async ({ id, name, payload: { installation, repositories } }) => {
+    await deleteInstallationFromCache(installation, repositories)
+    await deleteInstallationFromStore(installation, repositories)
+  }
+)
 
 webhooks.on(
   'installation_repositories.added',
-  async ({ id, name, payload }) => {
-    let installation = getInstallation(payload)
-    let repos = getRepositories(payload)
-
-    await addReposToCache(installation, repos)
-    await addReposToStore(installation, repos)
+  async ({ id, name, payload: { installation, repositories } }) => {
+    await addReposToCache(installation, repositories)
+    await addReposToStore(installation, repositories)
   }
 )
 webhooks.on(
   'installation_repositories.removed',
-  async ({ id, name, payload }) => {
-    let installation = getInstallation(payload)
-    let repos = getRepositories(payload)
-
-    await removeReposFromCache(installation, repos)
-    await removeReposFromStore(installation, repos)
+  async ({ id, name, payload: { installation, repositories } }) => {
+    await removeReposFromCache(installation, repositories)
+    await removeReposFromStore(installation, repositories)
   }
 )
 
@@ -82,7 +74,15 @@ const webhooksHandler = async (req, res, next) => {
 
     res.send({ success: true })
   } catch (err) {
-    let { code, statusCode } = webhookErrorInfo(err)
+    if (err.event) delete err.event.payload
+
+    if (err.errors)
+      err.errors.forEach(error => {
+        delete error.event.payload
+        error.info = error.message
+      })
+
+    let { code, statusCode } = errorInfo(err)
     respondError(code, statusCode, err)
   }
 }
