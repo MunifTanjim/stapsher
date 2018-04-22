@@ -4,6 +4,13 @@ const config = require('../configs/server')
 
 const privateKey = config.get('rsaPrivateKey')
 
+const hash = (string, algorithm, encoding = 'hex') => {
+  crypto
+    .createHash(algorithm)
+    .update(string)
+    .digest(encoding)
+}
+
 const encrypt = plainText => {
   try {
     let encryptedText = crypto
@@ -30,5 +37,6 @@ const decrypt = encryptedText => {
 
 module.exports = {
   encrypt,
-  decrypt
+  decrypt,
+  hash
 }

@@ -6,7 +6,7 @@ const OctokitREST = require('@octokit/rest')
 
 const config = require('../../configs/server')
 
-const { ResponseError } = _require('libs/Error')
+const { respondError } = _require('libs/Error')
 
 const { fetchInstallationId } = _require('libs/GitHub/actions')
 
@@ -76,7 +76,7 @@ class GitHub {
     }
   }
 
-  async getInstallationToken() {
+  async _getInstallationToken() {
     try {
       let installation_id = await this._getInstallationID()
 
@@ -94,7 +94,7 @@ class GitHub {
 
   async authAsInstallation() {
     try {
-      let { token } = await this.getInstallationToken()
+      let { token } = await this._getInstallationToken()
 
       this.api.authenticate({
         type: 'token',
@@ -123,14 +123,15 @@ class GitHub {
       return content
     } catch (err) {
       if (err instanceof SyntaxError)
-        throw new ResponseError('SITE_CONFIG_PARSE_FAILED', 400, err)
+        respondError('CONFIG_PARSE_FAILED', 400, err)
       else throw err
     }
   }
 
   async writeFile(filePath, data, branch, commitTitle) {
     branch = branch || this.info.branch
-    commitTitle = commitTitle || 'Add Staticman file'
+    commitTitle = commitTitle || 'add extraStatic data'
+
     try {
       await this.api.repos.createFile({
         user: this.info.username,
