@@ -128,18 +128,15 @@ class GitHub {
     }
   }
 
-  async writeFile(filePath, data, branch, commitTitle) {
-    branch = branch || this.info.branch
-    commitTitle = commitTitle || 'add extraStatic data'
-
+  async writeFile(filePath, fileContent, commitMessage) {
     try {
-      await this.api.repos.createFile({
-        user: this.info.username,
+      return await this.api.repos.createFile({
+        owner: this.info.username,
         repo: this.info.repository,
         path: filePath,
-        content: Buffer.from(data).toString('base64'),
-        message: commitTitle,
-        branch: branch
+        message: commitMessage,
+        content: Buffer.from(fileContent).toString('base64'),
+        branch: this.info.branch
       })
     } catch (err) {
       throw err

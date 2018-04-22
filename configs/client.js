@@ -29,7 +29,7 @@ const configSchema = {
   },
   format: {
     doc: 'Format of the data files being uploaded to the repository.',
-    format: ['json'],
+    format: ['json', 'yaml', 'yml'],
     default: 'json'
   },
   generatedFields: {

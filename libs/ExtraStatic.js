@@ -3,6 +3,8 @@ const isUndefined = require('lodash.isundefined')
 const isString = require('lodash.isstring')
 const isObject = require('lodash.isobject')
 const dateFormat = require('dateformat')
+const yaml = require('js-yaml')
+const _ = require('lodash')
 
 const GitHub = _require('libs/GitHub')
 
@@ -11,35 +13,70 @@ const { hash } = _require('libs/Crypto')
 
 const { loadConfig } = _require('configs/client')
 
-const getFormattedDate = ({ format = 'isoUtcDateTime' }) => {
-  const now = new Date()
-
+const formatDate = (date, format = 'isoUtcDateTime') => {
   switch (format) {
     case 'unix':
     case 'unix-milliseconds':
-      return now.getTime()
+      return date.getTime()
     case 'unix-seconds':
-      return Math.floor(now.getTime() / 1000)
+      return Math.floor(date.getTime() / 1000)
     default:
-      return dateFormat(now, format)
+      return dateFormat(date, format)
+  }
+}
+
+const resolvePlaceholder = (property, dictionary) => {
+  try {
+    if (property.includes('_date')) {
+      let [key, format] = property.split('~')
+      let date = _.get(dictionary, key)
+      return formatDate(date, format || 'yyyy-mm-dd')
+    }
+
+    let value = _.get(dictionary, property, '')
+
+    return _.isObject(value) ? '' : value
+  } catch (err) {
+    throw err
+  }
+}
+
+const getExtensionForFormat = format => {
+  try {
+    switch (format.toLowerCase()) {
+      case 'json':
+        return 'json'
+      case 'yaml':
+      case 'yml':
+        return 'yaml'
+      case 'frontmatter':
+        return 'md'
+    }
+  } catch (err) {
+    throw err
   }
 }
 
 class ExtraStatic {
   constructor({ username, repository, branch, entryType = '' }) {
-    this.uid = uuidv1()
+    this._id = uuidv1()
+    this._date = new Date()
 
+    this.entryType = entryType
     this.info = {
       username,
       repository,
       branch
     }
 
-    this.entryType = entryType
-
     this.github = new GitHub(this.info)
 
     this.configPath = 'extrastatic.json'
+    this.config = null
+
+    this.rawFields = null
+    this.fields = null
+    this.options = null
   }
 
   async authenticate() {
@@ -51,9 +88,9 @@ class ExtraStatic {
   }
 
   async getConfig(force = false) {
-    if (this.config && !force) return this.config
-
     try {
+      if (this.config && !force) return this.config
+
       let data = await this.github.readFile(this.configPath)
 
       let config = await this._validateConfig(data[this.entryType])
@@ -64,7 +101,7 @@ class ExtraStatic {
           config: config.branch
         })
 
-      this.config = loadConfig(config)
+      return loadConfig(config)
     } catch (err) {
       throw err
     }
@@ -98,9 +135,10 @@ class ExtraStatic {
 
   async _validateFields(fields) {
     try {
+      let requiredFields = this.config.get('requiredFields')
       let missingRequiredFields = []
 
-      this.config.get('requiredFields').forEach(field => {
+      requiredFields.forEach(field => {
         if (isUndefined(fields[field]) || fields[field] === '') {
           missingRequiredFields.push(field)
         }
@@ -109,14 +147,12 @@ class ExtraStatic {
       if (missingRequiredFields.length)
         respondError('MISSING_REQUIRED_FIELDS', 400, { missingRequiredFields })
 
-      let deniedFields = []
+      let allowedFields = this.config.get('allowedFields')
+      let notAllowedFields = []
 
       Object.keys(fields).forEach(field => {
-        if (
-          !this.config.get('allowedFields').includes(field) &&
-          fields[field] !== ''
-        ) {
-          deniedFields.push(field)
+        if (!allowedFields.includes(field) && fields[field] !== '') {
+          notAllowedFields.push(field)
         }
 
         if (isString(fields[field])) {
@@ -124,66 +160,8 @@ class ExtraStatic {
         }
       })
 
-      if (deniedFields.length)
-        respondError('DENIED_FIELDS_EXIST', 400, { deniedFields })
-
-      return true
-    } catch (err) {
-      throw err
-    }
-  }
-
-  async _applyGeneratedFields(fields) {
-    let generatedFields = this.config.get('generatedFields')
-
-    if (!generatedFields) return fields
-
-    Object.keys(generatedFields).forEach(field => {
-      let generatedField = generatedFields[field]
-
-      if (isObject(generatedField) && !Array.isArray(generatedField)) {
-        let options = generatedField.options || {}
-
-        switch (generatedField.type) {
-          case 'date':
-            fields[field] = getFormattedDate(options)
-            break
-        }
-      } else {
-        fields[field] = generatedField
-      }
-    })
-
-    return fields
-  }
-
-  async _applyTransforms(fields) {
-    try {
-      let transforms = this.config.get('transforms')
-
-      if (!transforms) return fields
-
-      Object.keys(transforms).forEach(field => {
-        if (!fields[field]) return
-
-        transforms[field] = Array.isArray(transforms[field])
-          ? transforms[field]
-          : [transforms[field]]
-
-        transforms[field].forEach(transform => {
-          if (transform.includes('hash')) {
-            let algorithm = transform.split('.')[1]
-
-            if (!algorithm)
-              respondError('MISSING_HASH_ALGORITHM', 422, {
-                field,
-                transform
-              })
-
-            fields[field] = hash(fields[field], algorithm)
-          }
-        })
-      })
+      if (notAllowedFields.length)
+        respondError('FIELDS_NOT_ALLOWED', 400, { notAllowedFields })
 
       return fields
     } catch (err) {
@@ -191,72 +169,162 @@ class ExtraStatic {
     }
   }
 
-  async _applyInternalFields(fields) {
+  async _applyGeneratedFields() {
     try {
-      let internalFields = { _id: this.uid }
+      let generatedFields = this.config.get('generatedFields')
 
-      if (this.options.parent) internalFields._parent = this.options.parent
+      if (!generatedFields) return
 
-      return { ...internalFields, ...fields }
+      Object.keys(generatedFields).forEach(field => {
+        let generatedField = generatedFields[field]
+
+        if (_.isObject(generatedField) && !_.isArray(generatedField)) {
+          let options = generatedField.options || {}
+
+          switch (generatedField.type) {
+            case 'date':
+              this.fields[field] = formatDate(this._date, options.format)
+              break
+          }
+        } else {
+          this.fields[field] = generatedField
+        }
+      })
+
+      return true
     } catch (err) {
       throw err
     }
   }
 
-  async _createFile(fields) {
+  async _applyTransforms() {
     try {
-      switch (this.siteConfig.get('format').toLowerCase()) {
-        case 'json':
-          return resolve(JSON.stringify(fields))
+      let transforms = this.config.get('transforms')
 
+      if (!transforms) return true
+
+      Object.keys(transforms).forEach(field => {
+        if (!this.fields[field]) return
+
+        transforms[field] = Array.isArray(transforms[field])
+          ? transforms[field]
+          : [transforms[field]]
+
+        transforms[field].forEach(transform => {
+          if (transform.includes('hash')) {
+            let algorithm = transform.split('~')[1]
+
+            if (!algorithm)
+              respondError('MISSING_HASH_ALGORITHM', 422, {
+                field,
+                transform
+              })
+
+            this.fields[field] = hash(this.fields[field], algorithm)
+          }
+        })
+      })
+
+      return true
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async _applyInternalFields() {
+    try {
+      let internalFields = { _id: this._id }
+
+      this.fields = { ...internalFields, ...this.fields }
+
+      return true
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async _createNewFile() {
+    try {
+      let format = this.siteConfig.get('format')
+
+      switch (format.toLowerCase()) {
+        case 'json':
+          return JSON.stringify(this.fields)
         case 'yaml':
         case 'yml':
-          try {
-            const output = yaml.safeDump(fields)
-
-            return resolve(output)
-          } catch (err) {
-            return reject(err)
-          }
-
-        case 'frontmatter':
-          const transforms = this.siteConfig.get('transforms')
-
-          const contentField =
-            transforms &&
-            Object.keys(transforms).find(field => {
-              return transforms[field] === 'frontmatterContent'
-            })
-
-          if (!contentField) {
-            return reject(errorHandler('NO_FRONTMATTER_CONTENT_TRANSFORM'))
-          }
-
-          const content = fields[contentField]
-          const attributeFields = Object.assign({}, fields)
-
-          delete attributeFields[contentField]
-
-          try {
-            const output = `---\n${yaml.safeDump(
-              attributeFields
-            )}---\n${content}\n`
-
-            return resolve(output)
-          } catch (err) {
-            return reject(err)
-          }
-
+          return yaml.safeDump(this.fields)
         default:
-          return reject(errorHandler('INVALID_FORMAT'))
+          respondError('UNSUPPORTED_FORMAT', 422, { format })
       }
     } catch (err) {
       throw err
     }
   }
 
-  async processEntry() {
+  async _resolvePlaceholders(string) {
     try {
+      dictionary = {
+        _id: this._id,
+        _date: this._date,
+        fields: this.fields,
+        options: this.options
+      }
+
+      let resolvedString = string.replace(/{(.*?)}/g, (placeholder, property) =>
+        resolvePlaceholder(property, dictionary)
+      )
+
+      return resolvedString
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async _getNewFilePath() {
+    try {
+      let path = this._resolvePlaceholders(this.config.get('path'))
+      if (path.slice(-1) === '/') path = path.slice(0, -1)
+
+      let rawFilename = this.config.get('filename')
+      let filename = this._id
+      if (rawFilename && rawFilename.length)
+        filename = this._resolvePlaceholders(rawFilename)
+
+      let extension = this.config.get('extension')
+      extension = extension.length
+        ? extension
+        : getExtensionForFormat(this.config.get('format'))
+
+      return `${path}/${filename}.${extension}`
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async processEntry(fields, options) {
+    try {
+      this.rawFields = { ...fields }
+      this.options = { ...options }
+
+      this.config = await this.getConfig()
+
+      this.fields = await this._validateFields(fields)
+
+      await this._applyGeneratedFields()
+      await this._applyTransforms()
+      await this._applyInternalFields()
+
+      let fileContent = await this._createNewFile()
+      let filePath = await this._getNewFilePath()
+      let commitMessage = await this._resolvePlaceholders(
+        this.siteConfig.get('commitMessage')
+      )
+
+      let result = await this.github.writeFile(
+        filePath,
+        fileContent,
+        commitMessage
+      )
     } catch (err) {
       throw err
     }
