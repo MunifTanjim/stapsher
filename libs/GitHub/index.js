@@ -6,7 +6,7 @@ const OctokitREST = require('@octokit/rest')
 
 const config = require('../../configs/server')
 
-const { respondError } = _require('libs/Error')
+const { throwError } = _require('libs/Error')
 
 const { fetchInstallationId } = _require('libs/GitHub/actions')
 
@@ -123,21 +123,23 @@ class GitHub {
       return content
     } catch (err) {
       if (err instanceof SyntaxError)
-        respondError('CONFIG_PARSE_FAILED', 400, err)
+        throwError('CONFIG_PARSE_FAILED', err, 422, true)
       else throw err
     }
   }
 
-  async writeFile(filePath, fileContent, commitMessage) {
+  async writeFile(path, content, commitMessage) {
     try {
-      return this.api.repos.createFile({
+      await this.api.repos.createFile({
         owner: this.info.username,
         repo: this.info.repository,
-        path: filePath,
+        branch: this.info.branch,
+        path,
         message: commitMessage,
-        content: Buffer.from(fileContent).toString('base64'),
-        branch: this.info.branch
+        content: Buffer.from(content).toString('base64')
       })
+
+      return true
     } catch (err) {
       throw err
     }

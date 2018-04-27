@@ -3,7 +3,7 @@ const config = require('../../../configs/server')
 const OctokitWebhooks = require('@octokit/webhooks')
 
 const logger = _require('libs/Logger')
-const { respondError, throwError } = _require('libs/Error')
+const { throwError } = _require('libs/Error')
 
 const {
   createInstallationOnCache,

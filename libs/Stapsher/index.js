@@ -8,7 +8,7 @@ const _ = require('lodash')
 
 const GitHub = _require('libs/GitHub')
 
-const { respondError, throwError } = _require('libs/Error')
+const { throwError } = _require('libs/Error')
 const { hash } = _require('libs/Crypto')
 
 const { loadConfig } = _require('configs/client')
@@ -29,11 +29,11 @@ const resolvePlaceholder = (property, dictionary) => {
   try {
     if (property.includes('_date')) {
       let [key, format] = property.split('~')
-      let date = _.get(dictionary, key)
+      let date = dictionary[key]
       return formatDate(date, format || 'yyyy-mm-dd')
     }
 
-    let value = _.get(dictionary, property, '')
+    let value = dictionary[property] || ''
 
     return _.isObject(value) ? '' : value
   } catch (err) {
@@ -55,6 +55,16 @@ const getExtensionForFormat = format => {
   } catch (err) {
     throw err
   }
+}
+
+const trimObjectStringEntries = object => {
+  let newObject = {}
+
+  for ([key, value] of Object.entries(object)) {
+    newObject[key] = isString(value) ? value.trim() : value
+  }
+
+  return newObject
 }
 
 class Stapsher {
@@ -89,19 +99,27 @@ class Stapsher {
     }
   }
 
+  addExtraInfo(infoObject) {
+    this.extraInfo = { ...this.extraInfo, ...infoObject }
+  }
+
   async getConfig(force = false) {
     try {
       if (this.config && !force) return this.config
 
       let data = await this.github.readFile(this.configPath)
 
-      let config = await this._validateConfig(data[this.entryType])
+      let config = this.entryType ? data[this.entryType] : data
+
+      await this._validateConfig(config)
 
       if (config.branch !== this.info.branch)
-        respondError('BRANCH_MISMATCH', 400, {
-          api: this.info.branch,
-          config: config.branch
-        })
+        throwError(
+          'BRANCH_MISMATCH',
+          { api: this.info.branch, config: config.branch },
+          422,
+          true
+        )
 
       return loadConfig(config)
     } catch (err) {
@@ -112,15 +130,18 @@ class Stapsher {
   async _validateConfig(config) {
     try {
       if (!config)
-        throwError('MISSING_CONFIG_BLOCK', { for: this.entryType }, 400, true)
+        throwError(
+          'MISSING_CONFIG_BLOCK',
+          { entryType: this.entryType },
+          400,
+          true
+        )
 
       let requiredOptions = ['allowedFields', 'branch', 'format', 'path']
 
-      let missingOptions = []
-
-      requiredOptions.forEach(option => {
-        if (isUndefined(config[option])) missingOptions.push(option)
-      })
+      let missingOptions = requiredOptions.filter(option =>
+        isUndefined(config[option])
+      )
 
       if (missingOptions.length)
         throwError(
@@ -130,7 +151,7 @@ class Stapsher {
           true
         )
 
-      return config
+      return true
     } catch (err) {
       throw err
     }
@@ -139,34 +160,28 @@ class Stapsher {
   async _validateFields(fields) {
     try {
       let requiredFields = this.config.get('requiredFields')
-      let missingRequiredFields = []
 
-      requiredFields.forEach(field => {
-        if (isUndefined(fields[field]) || fields[field] === '') {
-          missingRequiredFields.push(field)
-        }
-      })
+      let missingRequiredFields = requiredFields.filter(
+        field => isUndefined(fields[field]) || fields[field] === ''
+      )
 
       if (missingRequiredFields.length)
-        respondError('MISSING_REQUIRED_FIELDS', 400, { missingRequiredFields })
+        throwError(
+          'MISSING_REQUIRED_FIELDS',
+          { missingRequiredFields },
+          400,
+          true
+        )
 
       let allowedFields = this.config.get('allowedFields')
-      let notAllowedFields = []
-
-      Object.keys(fields).forEach(field => {
-        if (!allowedFields.includes(field) && fields[field] !== '') {
-          notAllowedFields.push(field)
-        }
-
-        if (isString(fields[field])) {
-          fields[field] = fields[field].trim()
-        }
-      })
+      let notAllowedFields = Object.keys(fields).filter(
+        field => !allowedFields.includes(field) && fields[field] !== ''
+      )
 
       if (notAllowedFields.length)
-        respondError('FIELDS_NOT_ALLOWED', 400, { notAllowedFields })
+        throwError('FIELDS_NOT_ALLOWED', { notAllowedFields }, 400, true)
 
-      return fields
+      return true
     } catch (err) {
       throw err
     }
@@ -176,23 +191,21 @@ class Stapsher {
     try {
       let generatedFields = this.config.get('generatedFields')
 
-      if (!generatedFields) return
+      if (!generatedFields) return true
 
-      Object.keys(generatedFields).forEach(field => {
-        let generatedField = generatedFields[field]
+      for ([name, field] of Object.entries(generatedFields)) {
+        if (_.isObject(field) && !_.isArray(field)) {
+          let { options = {}, type } = field
 
-        if (_.isObject(generatedField) && !_.isArray(generatedField)) {
-          let options = generatedField.options || {}
-
-          switch (generatedField.type) {
+          switch (type) {
             case 'date':
-              this.fields[field] = formatDate(this._date, options.format)
+              this.fields[name] = formatDate(this._date, options.format)
               break
           }
         } else {
-          this.fields[field] = generatedField
+          this.fields[name] = field
         }
-      })
+      }
 
       return true
     } catch (err) {
@@ -202,31 +215,31 @@ class Stapsher {
 
   async _applyTransforms() {
     try {
-      let transforms = this.config.get('transforms')
+      let transformBlocks = this.config.get('transforms')
 
-      if (!transforms) return true
+      if (!transformBlocks) return true
 
-      Object.keys(transforms).forEach(field => {
-        if (!this.fields[field]) return
+      for ([field, transforms] of Object.entries(transformBlocks)) {
+        if (!this.fields[field]) continue
 
-        transforms[field] = Array.isArray(transforms[field])
-          ? transforms[field]
-          : [transforms[field]]
+        transforms = Array.isArray(transforms) ? transforms : [transforms]
 
-        transforms[field].forEach(transform => {
+        transforms.forEach(transform => {
           if (transform.includes('hash')) {
-            let algorithm = transform.split('~')[1]
+            let [action, algorithm] = transform.split('~')
 
             if (!algorithm)
-              respondError('MISSING_HASH_ALGORITHM', 422, {
-                field,
-                transform
-              })
+              throwError(
+                'MISSING_HASH_ALGORITHM',
+                { field, transform },
+                422,
+                true
+              )
 
             this.fields[field] = hash(this.fields[field], algorithm)
           }
         })
-      })
+      }
 
       return true
     } catch (err) {
@@ -257,14 +270,14 @@ class Stapsher {
         case 'yml':
           return yaml.safeDump(this.fields)
         default:
-          respondError('UNSUPPORTED_FORMAT', 422, { format })
+          throwError('UNSUPPORTED_FORMAT', { format }, 422, true)
       }
     } catch (err) {
       throw err
     }
   }
 
-  async _resolvePlaceholders(string) {
+  _resolvePlaceholders(string) {
     try {
       dictionary = {
         _id: this._id,
@@ -304,39 +317,36 @@ class Stapsher {
     }
   }
 
-  addExtraInfo(info) {
-    this.extraInfo = { ...this.extraInfo, ...info }
-  }
-
-  async processEntry(fields, options) {
+  async processNewEntry(fields, options) {
     try {
       this.rawFields = { ...fields }
       this.options = { ...options }
 
       this.config = await this.getConfig()
 
-      this.fields = await this._validateFields(fields)
+      await this._validateFields(fields)
+
+      this.fields = trimObjectStringEntries(fields)
 
       await this._applyGeneratedFields()
       await this._applyTransforms()
       await this._applyInternalFields()
 
-      let fileContent = await this._createNewFile()
-      let filePath = await this._getNewFilePath()
-      let commitMessage = await this._resolvePlaceholders(
+      let content = await this._createNewFile()
+      let path = await this._getNewFilePath()
+      let commitMessage = this._resolvePlaceholders(
         this.siteConfig.get('commitMessage')
       )
 
-      let result = await this.github.writeFile(
-        filePath,
-        fileContent,
-        commitMessage
-      )
+      await this.github.writeFile(path, content, commitMessage)
 
-      return {
-        fields: this.fields
-      }
+      let result = { fields: this.fields }
+      if (this.options.redirect) result.redirect = this.options.redirect.success
+
+      return result
     } catch (err) {
+      if (this.options.redirect) err.redirect = this.options.redirect.failure
+
       throw err
     }
   }

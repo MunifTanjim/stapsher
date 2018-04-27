@@ -3,10 +3,10 @@ const asyncHandler = require('express-async-handler')
 
 const Stapsher = _require('libs/Stapsher')
 const logger = _require('libs/Logger')
-const { respondError, throwError } = _require('libs/Error')
+const { throwError } = _require('libs/Error')
 
-router.get(
-  '/',
+router.post(
+  '/:username/:repository/:branch/:entryType?',
   asyncHandler(async (req, res, next) => {
     try {
       let stapsher = new Stapsher(req.params)
@@ -20,6 +20,14 @@ router.get(
 
       let fields = req.body.fields
       let options = req.body.options || {}
+
+      let { redirect, ...result } = await stapsher.processNewEntry(
+        fields,
+        options
+      )
+
+      if (redirect) res.redirect(redirect)
+      else res.send(result)
     } catch (err) {
       throw err
     }

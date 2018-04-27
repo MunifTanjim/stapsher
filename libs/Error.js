@@ -29,22 +29,18 @@ const throwError = (errorCode, cause, statusCode, expose = false) => {
     : new ServerError(errorCode, cause, statusCode)
 }
 
-const respondError = (errorCode, statusCode, cause) => {
-  throw new ResponseError(errorCode, statusCode, cause)
-}
-
 const notFoundErrorHandler = (req, res, next) =>
-  throwError('API_ENDPOINT_NOT_FOUND', null, 404, true)
+  throwError('API_ENDPOINT_NOT_FOUND', { path: req.url }, 404, true)
 
 const errorHandler = (err, req, res, next) => {
-  let { message, cause, statusCode = 500 } = err
+  let { message, cause, statusCode = 500, redirect } = err
 
-  let code = err instanceof ResponseError ? message : 'SERVER_PROBLEM'
-  let info = cause instanceof Error ? cause.toString() : cause
-
-  let errorObject = { code, info }
-
-  res.status(statusCode).send(errorObject)
+  if (redirect) res.redirect(redirect)
+  else
+    res.status(statusCode).send({
+      code: err instanceof ResponseError ? message : 'SERVER_PROBLEM',
+      info: cause instanceof Error ? cause.toString() : cause
+    })
 
   logger.error(message, {
     ...(cause instanceof Error ? { info: cause.toString(), ...cause } : cause),
@@ -53,7 +49,6 @@ const errorHandler = (err, req, res, next) => {
 }
 
 module.exports = {
-  respondError,
   ResponseError,
   errorHandler,
   notFoundErrorHandler

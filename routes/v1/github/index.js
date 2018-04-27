@@ -5,10 +5,10 @@ const config = _require('configs/server')
 
 const { webhooksHandler } = _require('libs/GitHub/webhooks')
 
-const { entryHandler } = require('./entry')
+const newEntryHandler = require('./new')
 
 router.post('/webhook', asyncHandler(webhooksHandler))
 
-router.use('/entry', entryHandler)
+router.use('/new', newEntryHandler)
 
 module.exports = router
