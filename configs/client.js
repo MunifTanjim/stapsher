@@ -19,7 +19,7 @@ const configSchema = {
     doc:
       'Text to be used as the commit message when pushing entries to the GitHub repository.',
     format: String,
-    default: 'add extraStatic data'
+    default: 'add Stapsher data'
   },
   filename: {
     doc:

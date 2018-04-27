@@ -53,7 +53,7 @@ const configSchema = {
     privateKey: {
       doc: 'Path to the private key for GitHub App',
       format: String,
-      default: 'secrets/extrastatic-app.private-key.pem',
+      default: 'secrets/stapsher.private-key.pem',
       env: 'GITHUB_APP_PRIVATE_KEY'
     },
     webhookSecret: {
@@ -67,7 +67,7 @@ const configSchema = {
     subdomain: {
       doc: 'localtunnel subdomain for webhooks',
       format: String,
-      default: 'extrastatic-app',
+      default: 'stapsher',
       env: 'LOCALTUNNEL_SUBDOMAIN'
     }
   },

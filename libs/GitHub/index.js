@@ -20,7 +20,7 @@ class GitHub {
       timeout: 5000,
       headers: {
         accept: 'application/vnd.github.v3+json',
-        'user-agent': 'extraStatic App agent'
+        'user-agent': 'Stapsher agent'
       },
       baseUrl: 'https://api.github.com'
     })
@@ -130,7 +130,7 @@ class GitHub {
 
   async writeFile(filePath, fileContent, commitMessage) {
     try {
-      return await this.api.repos.createFile({
+      return this.api.repos.createFile({
         owner: this.info.username,
         repo: this.info.repository,
         path: filePath,

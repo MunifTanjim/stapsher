@@ -8,7 +8,7 @@ const _ = require('lodash')
 
 const GitHub = _require('libs/GitHub')
 
-const { respondError } = _require('libs/Error')
+const { respondError, throwError } = _require('libs/Error')
 const { hash } = _require('libs/Crypto')
 
 const { loadConfig } = _require('configs/client')
@@ -57,7 +57,7 @@ const getExtensionForFormat = format => {
   }
 }
 
-class ExtraStatic {
+class Stapsher {
   constructor({ username, repository, branch, entryType = '' }) {
     this._id = uuidv1()
     this._date = new Date()
@@ -69,9 +69,11 @@ class ExtraStatic {
       branch
     }
 
+    this.extraInfo = {}
+
     this.github = new GitHub(this.info)
 
-    this.configPath = 'extrastatic.json'
+    this.configPath = 'stapsher.json'
     this.config = null
 
     this.rawFields = null
@@ -81,7 +83,7 @@ class ExtraStatic {
 
   async authenticate() {
     try {
-      return await this.github.authAsInstallation()
+      return this.github.authAsInstallation()
     } catch (err) {
       throw err
     }
@@ -110,9 +112,7 @@ class ExtraStatic {
   async _validateConfig(config) {
     try {
       if (!config)
-        respondError('MISSING_CONFIG_BLOCK', 400, {
-          for: this.entryType
-        })
+        throwError('MISSING_CONFIG_BLOCK', { for: this.entryType }, 400, true)
 
       let requiredOptions = ['allowedFields', 'branch', 'format', 'path']
 
@@ -123,9 +123,12 @@ class ExtraStatic {
       })
 
       if (missingOptions.length)
-        respondError('MISSING_CONFIG_OPTIONS', 400, {
-          options: missingOptions
-        })
+        throwError(
+          'MISSING_CONFIG_OPTIONS',
+          { options: missingOptions },
+          400,
+          true
+        )
 
       return config
     } catch (err) {
@@ -301,6 +304,10 @@ class ExtraStatic {
     }
   }
 
+  addExtraInfo(info) {
+    this.extraInfo = { ...this.extraInfo, ...info }
+  }
+
   async processEntry(fields, options) {
     try {
       this.rawFields = { ...fields }
@@ -325,10 +332,14 @@ class ExtraStatic {
         fileContent,
         commitMessage
       )
+
+      return {
+        fields: this.fields
+      }
     } catch (err) {
       throw err
     }
   }
 }
 
-module.exports = ExtraStatic
+module.exports = Stapsher

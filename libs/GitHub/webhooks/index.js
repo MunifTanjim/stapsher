@@ -3,7 +3,7 @@ const config = require('../../../configs/server')
 const OctokitWebhooks = require('@octokit/webhooks')
 
 const logger = _require('libs/Logger')
-const { respondError } = _require('libs/Error')
+const { respondError, throwError } = _require('libs/Error')
 
 const {
   createInstallationOnCache,
@@ -79,11 +79,12 @@ const webhooksHandler = async (req, res, next) => {
     if (err.errors)
       err.errors.forEach(error => {
         delete error.event.payload
-        error.info = error.message
+        error.info = error.toString()
       })
 
     let { code, statusCode } = errorInfo(err)
-    respondError(code, statusCode, err)
+
+    throwError(code, err, statusCode, true)
   }
 }
 
