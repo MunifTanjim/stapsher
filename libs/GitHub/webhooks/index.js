@@ -18,7 +18,7 @@ const {
   removeReposFromStore
 } = _require('libs/Firebase/actions')
 
-const transformer = require('./transformer')
+const { transformer } = require('./transformer')
 const { errorInfo } = require('./errors')
 
 const webhookSecret = config.get('githubApp.webhookSecret')

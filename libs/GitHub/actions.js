@@ -7,12 +7,10 @@ const { ResponseError } = _require('libs/Error')
 const { fetchInstallationIdFromStore } = _require('libs/Firebase/actions')
 const { fetchInstallationIdFromCache } = _require('libs/lowdb/actions')
 
-const fetchInstallationIdFromGitHub = async ({ username }, authAsGithubApp) => {
+const fetchInstallationIdFromGitHub = async ({ username }, api) => {
   logger.verbose('Fetching installation_id from GitHub API')
 
   try {
-    let api = await authAsGithubApp()
-
     let page = 1,
       hasNext = true
 
@@ -38,7 +36,7 @@ const fetchInstallationIdFromGitHub = async ({ username }, authAsGithubApp) => {
   }
 }
 
-const fetchInstallationId = async (info, authAsGithubApp) => {
+const fetchInstallationId = async (info, api) => {
   logger.verbose('Fetching installation_id')
 
   try {
@@ -50,7 +48,7 @@ const fetchInstallationId = async (info, authAsGithubApp) => {
     id = await fetchInstallationIdFromStore(info)
     if (!isNull(id)) return id
 
-    id = await fetchInstallationIdFromGitHub(info, authAsGithubApp)
+    id = await fetchInstallationIdFromGitHub(info, api)
     if (!isNull(id)) return id
 
     throw new ResponseError('GITHUB_APP_NOT_INSTALLED', 400, info)

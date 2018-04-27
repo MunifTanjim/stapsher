@@ -57,7 +57,7 @@ class GitHub {
         )
       })
 
-      return this.api
+      return true
     } catch (err) {
       throw err
     }
@@ -65,10 +65,7 @@ class GitHub {
 
   async _getInstallationID() {
     try {
-      this.installation_id = await fetchInstallationId(
-        this.info,
-        this._authAsApp.bind(this)
-      )
+      this.installation_id = await fetchInstallationId(this.info, this.api)
 
       return this.installation_id
     } catch (err) {
@@ -78,6 +75,8 @@ class GitHub {
 
   async _getInstallationToken() {
     try {
+      await this._authAsApp()
+
       let installation_id = await this._getInstallationID()
 
       let { data } = await this.api.apps.createInstallationToken({

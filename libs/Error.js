@@ -49,6 +49,7 @@ const errorHandler = (err, req, res, next) => {
 }
 
 module.exports = {
+  throwError,
   ResponseError,
   errorHandler,
   notFoundErrorHandler
