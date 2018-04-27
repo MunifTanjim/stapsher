@@ -13,59 +13,12 @@ const { hash } = _require('libs/Crypto')
 
 const { loadConfig } = _require('configs/client')
 
-const formatDate = (date, format = 'isoUtcDateTime') => {
-  switch (format) {
-    case 'unix':
-    case 'unix-milliseconds':
-      return date.getTime()
-    case 'unix-seconds':
-      return Math.floor(date.getTime() / 1000)
-    default:
-      return dateFormat(date, format)
-  }
-}
-
-const resolvePlaceholder = (property, dictionary) => {
-  try {
-    if (property.includes('_date')) {
-      let [key, format] = property.split('~')
-      let date = dictionary[key]
-      return formatDate(date, format || 'yyyy-mm-dd')
-    }
-
-    let value = dictionary[property] || ''
-
-    return _.isObject(value) ? '' : value
-  } catch (err) {
-    throw err
-  }
-}
-
-const getExtensionForFormat = format => {
-  try {
-    switch (format.toLowerCase()) {
-      case 'json':
-        return 'json'
-      case 'yaml':
-      case 'yml':
-        return 'yaml'
-      case 'frontmatter':
-        return 'md'
-    }
-  } catch (err) {
-    throw err
-  }
-}
-
-const trimObjectStringEntries = object => {
-  let newObject = {}
-
-  for ([key, value] of Object.entries(object)) {
-    newObject[key] = isString(value) ? value.trim() : value
-  }
-
-  return newObject
-}
+const {
+  formatDate,
+  resolvePlaceholder,
+  getExtensionForFormat,
+  trimObjectStringEntries
+} = require('./utils')
 
 class Stapsher {
   constructor({ username, repository, branch, entryType = '' }) {
@@ -193,7 +146,7 @@ class Stapsher {
 
       if (!generatedFields) return true
 
-      for ([name, field] of Object.entries(generatedFields)) {
+      for (let [name, field] of Object.entries(generatedFields)) {
         if (_.isObject(field) && !_.isArray(field)) {
           let { options = {}, type } = field
 
@@ -219,7 +172,7 @@ class Stapsher {
 
       if (!transformBlocks) return true
 
-      for ([field, transforms] of Object.entries(transformBlocks)) {
+      for (let [field, transforms] of Object.entries(transformBlocks)) {
         if (!this.fields[field]) continue
 
         transforms = Array.isArray(transforms) ? transforms : [transforms]
@@ -261,13 +214,14 @@ class Stapsher {
 
   async _createNewFile() {
     try {
-      let format = this.siteConfig.get('format')
+      let format = this.config.get('format')
 
       switch (format.toLowerCase()) {
         case 'json':
           return JSON.stringify(this.fields)
         case 'yaml':
         case 'yml':
+          console.log(this.fields)
           return yaml.safeDump(this.fields)
         default:
           throwError('UNSUPPORTED_FORMAT', { format }, 422, true)
@@ -279,7 +233,7 @@ class Stapsher {
 
   _resolvePlaceholders(string) {
     try {
-      dictionary = {
+      let dictionary = {
         _id: this._id,
         _date: this._date,
         fields: this.fields,
@@ -335,7 +289,7 @@ class Stapsher {
       let content = await this._createNewFile()
       let path = await this._getNewFilePath()
       let commitMessage = this._resolvePlaceholders(
-        this.siteConfig.get('commitMessage')
+        this.config.get('commitMessage')
       )
 
       await this.github.writeFile(path, content, commitMessage)

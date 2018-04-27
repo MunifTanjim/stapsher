@@ -4,12 +4,11 @@ const config = require('../configs/server')
 
 const privateKey = config.get('rsaPrivateKey')
 
-const hash = (string, algorithm, encoding = 'hex') => {
+const hash = (string, algorithm, encoding = 'hex') =>
   crypto
     .createHash(algorithm)
     .update(string)
     .digest(encoding)
-}
 
 const encrypt = plainText => {
   try {

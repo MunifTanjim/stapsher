@@ -108,14 +108,14 @@ class GitHub {
 
   async readFile(path) {
     try {
-      let blob = await this.api.repos.getContent({
-        user: this.info.username,
+      let { data } = await this.api.repos.getContent({
+        owner: this.info.username,
         repo: this.info.repository,
         ref: this.info.branch,
         path
       })
 
-      let content = Buffer.from(blob.content, 'base64').toString()
+      let content = Buffer.from(data.content, 'base64').toString()
 
       content = JSON.parse(content)
 

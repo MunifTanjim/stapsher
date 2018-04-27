@@ -32,6 +32,11 @@ const configSchema = {
     format: ['json', 'yaml', 'yml'],
     default: 'json'
   },
+  extension: {
+    doc: 'Extension for the data files being uploaded to the repository.',
+    format: String,
+    default: 'json'
+  },
   generatedFields: {
     doc:
       'List of fields to be appended to entries automatically. It consists of an object where keys correspond to the names of the fields being created and values being of mixed type. If values are objects, Staticman will look for a `type` and `options` keys inside and perform different operations based on their type; otherwise, the value will be used directly as the content of the generated field.',
