@@ -1,12 +1,13 @@
-const router = require('express').Router()
+const router = require('express').Router({ mergeParams: true })
 const asyncHandler = require('express-async-handler')
 
 const Stapsher = _require('libs/Stapsher')
 const logger = _require('libs/Logger')
 const { throwError } = _require('libs/Error')
+const { verifyAkismet } = _require('libs/Akismet')
 
 router.post(
-  '/:username/:repository/:branch/:entryType?',
+  '/new',
   asyncHandler(async (req, res, next) => {
     try {
       let stapsher = new Stapsher(req.params)
@@ -28,6 +29,34 @@ router.post(
 
       if (redirect) res.redirect(redirect)
       else res.send(result)
+    } catch (err) {
+      throw err
+    }
+  })
+)
+
+router.get(
+  '/verify/akismet',
+  asyncHandler(async (req, res, next) => {
+    try {
+      let stapsher = new Stapsher(req.params)
+
+      await stapsher.authenticate()
+
+      config = await stapsher.getConfig()
+
+      let enabled = config.get('akismet.enabled')
+
+      if (enabled) {
+        let validAPIKey = await verifyAkismet(
+          config.get('akismet.apiKey'),
+          config.get('akismet.siteURL')
+        )
+
+        return res.send({ enabled, validAPIKey })
+      } else {
+        return res.send({ enabled })
+      }
     } catch (err) {
       throw err
     }

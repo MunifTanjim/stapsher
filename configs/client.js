@@ -3,6 +3,56 @@ const convict = require('convict')
 const { decrypt } = require('../libs/Crypto')
 
 const configSchema = {
+  akismet: {
+    siteURL: {
+      doc: 'URL of an Akismet account used for spam checking.',
+      docExample: 'http://yourdomain.com',
+      format: String,
+      default: null
+    },
+    apiKey: {
+      doc: 'API key to be used with Akismet.',
+      format: 'EncryptedString',
+      default: null
+    },
+    enabled: {
+      doc:
+        'Whether to use Akismet to check entries for spam. This requires an Akismet account to be configured in the Staticman API instance being used.',
+      format: Boolean,
+      default: false
+    },
+    fields: {
+      author: {
+        doc:
+          "Name of the field to be used as the entry author's Name in Akistmet",
+        format: String,
+        default: ''
+      },
+      authorEmail: {
+        doc:
+          "Name of the field to be used as the entry author's Email in Akistmet",
+        format: String,
+        default: ''
+      },
+      authorUrl: {
+        doc:
+          "Name of the field to be used as the entry author's URL in Akistmet",
+        format: String,
+        default: ''
+      },
+      content: {
+        doc: 'Name of the field to be used as the entry Content in Akistmet',
+        format: String,
+        default: ''
+      }
+    },
+    type: {
+      doc:
+        "Type of entry to be sent to Akismet, e.g.: 'comment','forum-post','reply','blog-post','contact-form','signup','message' etc.",
+      format: String,
+      default: 'comment'
+    }
+  },
   allowedFields: {
     doc:
       'An array with the names of the allowed fields. If any of the fields sent is not part of this list, the entry will be discarded and an error will be thrown.',

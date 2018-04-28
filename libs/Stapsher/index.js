@@ -18,7 +18,7 @@ const {
 } = require('./utils')
 
 class Stapsher {
-  constructor({ username, repository, branch, entryType = '' }) {
+  constructor({ username, repository, branch, entryType }) {
     this._id = uuidv1()
     this._date = new Date()
 
@@ -59,7 +59,7 @@ class Stapsher {
 
       let data = await this.github.readFile(this.configPath)
 
-      let config = this.entryType ? data[this.entryType] : data
+      let config = data[this.entryType]
 
       await this._validateConfig(config)
 
@@ -267,6 +267,8 @@ class Stapsher {
       this.options = { ...options }
 
       this.config = await this.getConfig()
+
+      // TODO: Check for spam with Akismet
 
       await this._validateFields(fields)
 
