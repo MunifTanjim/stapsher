@@ -80,14 +80,14 @@ const configSchema = {
   }
 }
 
-// convict.addFormat({
-//   name: 'EncryptedString',
-//   validate: val => true,
-//   coerce: val => decrypt(val)
-// })
-
 const loadConfig = data => {
   try {
+    convict.addFormat({
+      name: 'EncryptedString',
+      validate: Boolean,
+      coerce: decrypt
+    })
+
     let config = convict(configSchema)
 
     config.load(data)

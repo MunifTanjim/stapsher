@@ -16,9 +16,9 @@ const configSchema = {
     env: 'PORT'
   },
   rsaPrivateKey: {
-    doc: 'RSA Private Key.',
+    doc: 'Path to RSA Private Key.',
     format: String,
-    default: null,
+    default: 'secrets/stapsher.private-key.pem',
     env: 'RSA_PRIVATE_KEY'
   },
   firebase: {

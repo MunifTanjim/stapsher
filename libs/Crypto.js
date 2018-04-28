@@ -1,14 +1,23 @@
+const fs = require('fs')
+const path = require('path')
 const crypto = require('crypto')
 
 const config = require('../configs/server')
 
-const privateKey = config.get('rsaPrivateKey')
+const privateKey = fs.readFileSync(path.resolve(config.get('rsaPrivateKey')))
 
-const hash = (string, algorithm, encoding = 'hex') =>
-  crypto
-    .createHash(algorithm)
-    .update(string)
-    .digest(encoding)
+const hash = (string, algorithm, encoding = 'hex') => {
+  try {
+    let hashedString = crypto
+      .createHash(algorithm)
+      .update(string)
+      .digest(encoding)
+
+    return hashedString
+  } catch (err) {
+    throw err
+  }
+}
 
 const encrypt = plainText => {
   try {
@@ -18,7 +27,7 @@ const encrypt = plainText => {
 
     return encryptedText
   } catch (err) {
-    return null
+    throw err
   }
 }
 
@@ -30,7 +39,7 @@ const decrypt = encryptedText => {
 
     return decryptedText
   } catch (err) {
-    return null
+    throw err
   }
 }
 

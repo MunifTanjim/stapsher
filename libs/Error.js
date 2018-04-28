@@ -33,7 +33,6 @@ const notFoundErrorHandler = (req, res, next) =>
   throwError('API_ENDPOINT_NOT_FOUND', { path: req.url }, 404, true)
 
 const errorHandler = (err, req, res, next) => {
-  console.log(err)
   let { message, cause, statusCode = 500, redirect } = err
 
   if (redirect) res.redirect(redirect)
