@@ -142,18 +142,50 @@ class GitHub {
     }
   }
 
-  async writeFile(path, content, commitMessage) {
+  async writeFile(path, commitMessage, content, branch = this.info.branch) {
     try {
-      await this.api.repos.createFile({
+      let { data } = this.api.repos.createFile({
         owner: this.info.username,
         repo: this.info.repository,
-        branch: this.info.branch,
         path,
         message: commitMessage,
-        content: Buffer.from(content).toString('base64')
+        content: Buffer.from(content).toString('base64'),
+        branch
       })
 
-      return true
+      return data
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async writeFileAndCreatePR(path, commitMessage, content, branch, body = '') {
+    try {
+      let { data: branchData } = await this.api.repos.getBranch({
+        owner: this.info.username,
+        repo: this.info.repository,
+        branch: this.info.branch
+      })
+
+      await this.api.gitdata.createReference({
+        owner: this.info.username,
+        repo: this.info.repository,
+        ref: `refs/heads/${branch}`,
+        sha: branchData.commit.sha
+      })
+
+      await this.writeFile(path, commitMessage, content, branch)
+
+      let { data } = await this.api.pullRequests.create({
+        owner: this.info.username,
+        repo: this.info.repository,
+        head: branch,
+        base: this.info.branch,
+        title: commitMessage,
+        body
+      })
+
+      return data
     } catch (err) {
       throw err
     }

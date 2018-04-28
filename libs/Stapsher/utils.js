@@ -1,6 +1,7 @@
 const _ = require('lodash')
 const yaml = require('js-yaml')
 const dateFormat = require('dateformat')
+const markdownTable = require('markdown-table')
 
 const formatDate = (date, format = 'isoUtcDateTime') => {
   switch (format) {
@@ -72,10 +73,22 @@ const getContentDump = (dataObject, format) => {
   }
 }
 
+const generatePullRequestBody = (dataObject, introduction) => {
+  let tableData = [['Field', 'Value']]
+
+  for (let [field, value] of Object.entries(dataObject))
+    tableData.push([field, value])
+
+  let body = introduction + '\n' + markdownTable(tableData)
+
+  return body
+}
+
 module.exports = {
   formatDate,
+  getContentDump,
   resolvePlaceholder,
   getFormatExtension,
   trimObjectStringEntries,
-  getContentDump
+  generatePullRequestBody
 }

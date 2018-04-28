@@ -10,10 +10,11 @@ const { loadConfig } = _require('configs/client')
 
 const {
   formatDate,
+  getContentDump,
   resolvePlaceholder,
   getFormatExtension,
   trimObjectStringEntries,
-  getContentDump
+  generatePullRequestBody
 } = require('./utils')
 
 class Stapsher {
@@ -281,7 +282,24 @@ class Stapsher {
         this.config.get('commitMessage')
       )
 
-      await this.github.writeFile(path, content, commitMessage)
+      if (this.config.get('moderation')) {
+        let prBranch = `stapsher:${this.entryType}(${this._id})`
+
+        let prBody = generatePullRequestBody(
+          this.fields,
+          this.config.get('pullRequestBody')
+        )
+
+        await this.github.writeFileAndCreatePR(
+          path,
+          commitMessage,
+          content,
+          prBranch,
+          prBody
+        )
+      } else {
+        await this.github.writeFile(path, commitMessage, content)
+      }
 
       let result = { fields: this.fields }
       if (this.options.redirect) result.redirect = this.options.redirect.success
