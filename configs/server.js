@@ -71,8 +71,8 @@ const configSchema = {
       env: 'LOCALTUNNEL_SUBDOMAIN'
     }
   },
-  paths: {
-    cache: {
+  cache: {
+    path: {
       doc: 'Cache path',
       format: String,
       default: 'cache',

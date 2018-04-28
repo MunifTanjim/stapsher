@@ -1,23 +1,19 @@
-const uuidv1 = require('uuid/v1')
-const isUndefined = require('lodash.isundefined')
-const isString = require('lodash.isstring')
-const isObject = require('lodash.isobject')
-const dateFormat = require('dateformat')
-const yaml = require('js-yaml')
 const _ = require('lodash')
+const yaml = require('js-yaml')
+const uuidv1 = require('uuid/v1')
 
 const GitHub = _require('libs/GitHub')
-
-const { throwError } = _require('libs/Error')
 const { hash } = _require('libs/Crypto')
+const { throwError } = _require('libs/Error')
 
 const { loadConfig } = _require('configs/client')
 
 const {
   formatDate,
   resolvePlaceholder,
-  getExtensionForFormat,
-  trimObjectStringEntries
+  getFormatExtension,
+  trimObjectStringEntries,
+  getContentDump
 } = require('./utils')
 
 class Stapsher {
@@ -93,7 +89,7 @@ class Stapsher {
       let requiredOptions = ['allowedFields', 'branch', 'format', 'path']
 
       let missingOptions = requiredOptions.filter(option =>
-        isUndefined(config[option])
+        _.isUndefined(config[option])
       )
 
       if (missingOptions.length)
@@ -115,7 +111,7 @@ class Stapsher {
       let requiredFields = this.config.get('requiredFields')
 
       let missingRequiredFields = requiredFields.filter(
-        field => isUndefined(fields[field]) || fields[field] === ''
+        field => _.isUndefined(fields[field]) || fields[field] === ''
       )
 
       if (missingRequiredFields.length)
@@ -212,20 +208,34 @@ class Stapsher {
     }
   }
 
-  async _createNewFile() {
+  _getNewFileContent() {
     try {
       let format = this.config.get('format')
 
-      switch (format.toLowerCase()) {
-        case 'json':
-          return JSON.stringify(this.fields)
-        case 'yaml':
-        case 'yml':
-          console.log(this.fields)
-          return yaml.safeDump(this.fields)
-        default:
-          throwError('UNSUPPORTED_FORMAT', { format }, 422, true)
-      }
+      return getContentDump(this.fields, format)
+    } catch (err) {
+      throw err
+    }
+  }
+
+  _getNewFilePath() {
+    try {
+      let path = this._resolvePlaceholders(this.config.get('path'))
+      if (path.slice(-1) === '/') path = path.slice(0, -1)
+
+      let format = this.config.get('format')
+
+      let customFilename = this.config.get('filename')
+      let filename = customFilename.length
+        ? this._resolvePlaceholders(customFilename)
+        : this._id
+
+      let customExtension = this.config.get('extension')
+      let extension = customExtension.length
+        ? customExtension
+        : getFormatExtension(format)
+
+      return `${path}/${filename}.${extension}`
     } catch (err) {
       throw err
     }
@@ -250,27 +260,6 @@ class Stapsher {
     }
   }
 
-  async _getNewFilePath() {
-    try {
-      let path = this._resolvePlaceholders(this.config.get('path'))
-      if (path.slice(-1) === '/') path = path.slice(0, -1)
-
-      let rawFilename = this.config.get('filename')
-      let filename = this._id
-      if (rawFilename && rawFilename.length)
-        filename = this._resolvePlaceholders(rawFilename)
-
-      let extension = this.config.get('extension')
-      extension = extension.length
-        ? extension
-        : getExtensionForFormat(this.config.get('format'))
-
-      return `${path}/${filename}.${extension}`
-    } catch (err) {
-      throw err
-    }
-  }
-
   async processNewEntry(fields, options) {
     try {
       this.rawFields = { ...fields }
@@ -286,8 +275,8 @@ class Stapsher {
       await this._applyTransforms()
       await this._applyInternalFields()
 
-      let content = await this._createNewFile()
-      let path = await this._getNewFilePath()
+      let content = this._getNewFileContent()
+      let path = this._getNewFilePath()
       let commitMessage = this._resolvePlaceholders(
         this.config.get('commitMessage')
       )

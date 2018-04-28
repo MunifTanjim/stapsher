@@ -4,10 +4,11 @@ const { promisify } = require('util')
 const jwt = require('jsonwebtoken')
 const OctokitREST = require('@octokit/rest')
 
+const yaml = require('js-yaml')
+
 const config = require('../../configs/server')
 
 const { throwError } = _require('libs/Error')
-
 const { fetchInstallationId } = _require('libs/GitHub/actions')
 
 class GitHub {
@@ -108,6 +109,8 @@ class GitHub {
 
   async readFile(path) {
     try {
+      let extension = path.split('.').pop()
+
       let { data } = await this.api.repos.getContent({
         owner: this.info.username,
         repo: this.info.repository,
@@ -115,14 +118,26 @@ class GitHub {
         path
       })
 
-      let content = Buffer.from(data.content, 'base64').toString()
+      let blob = Buffer.from(data.content, 'base64').toString()
 
-      content = JSON.parse(content)
+      let content
+
+      switch (extension.toLowerCase()) {
+        case 'json':
+          content = JSON.parse(blob)
+          break
+        case 'yaml':
+        case 'yml':
+          content = yaml.safeLoad(blob, 'utf8')
+          break
+        default:
+          throwError('UNSUPPORTED_EXTENSION', { extension }, 422, true)
+      }
 
       return content
     } catch (err) {
       if (err instanceof SyntaxError)
-        throwError('CONFIG_PARSE_FAILED', err, 422, true)
+        throwError('FILE_PARSE_FAILED', err, 422, true)
       else throw err
     }
   }

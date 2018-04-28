@@ -7,7 +7,7 @@ const { ResponseError } = _require('libs/Error')
 const { fetchInstallationIdFromStore } = _require('libs/Firebase/actions')
 const { fetchInstallationIdFromCache } = _require('libs/lowdb/actions')
 
-const fetchInstallationIdFromGitHub = async ({ username }, api) => {
+const fetchInstallationIdFromGitHub = async (info, api) => {
   logger.verbose('Fetching installation_id from GitHub API')
 
   try {
@@ -20,7 +20,7 @@ const fetchInstallationIdFromGitHub = async ({ username }, api) => {
       })
 
       for ({ id, account } of data) {
-        if (account.login === username) return id
+        if (account.login === info.username) return id
       }
 
       if (meta.link) {

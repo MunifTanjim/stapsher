@@ -1,34 +1,29 @@
-const _ = require('lodash')
+const fp = require('lodash/fp')
 
-const { store, fieldValue } = require('../Firebase')
+const { store, fieldValue } = _require('libs/Firebase')
 
-const { normalizeRepos } = require('../../libs/GitHub/webhooks/transformer')
+const { normalizeRepos } = _require('libs/GitHub/webhooks/transformer')
 
-const logger = require('../../libs/Logger')
+const { addRepoToCache } = _require('libs/lowdb/actions')
 
-const { addRepoToCache } = require('../../libs/lowdb/actions')
+const logger = _require('libs/Logger')
 
 const createInstallationOnStore = async (installation, repos) => {
   logger.verbose('Creating installation on FireStore')
 
-  let repoIDs = _.map(repos, 'id')
-  let flattenedRepos = _.keyBy(normalizeRepos(repos, installation.id), 'id')
-
   try {
-    let batch = store.batch()
+    let repoIDs = fp.map('id')(repos)
+    let stuffedRepos = fp.keyBy('id')(normalizeRepos(repos, installation))
 
-    batch.set(store.collection('installations').doc(String(installation.id)), {
-      installation,
-      repositories: _.keyBy(repos, 'id')
-    })
+    let batch = store.batch()
 
     let reposCollection = store.collection('repositories')
 
-    repoIDs.forEach(repoID => {
-      batch.set(reposCollection.doc(String(repoID)), flattenedRepos[repoID])
-    })
+    repoIDs.forEach(repoID =>
+      batch.set(reposCollection.doc(String(repoID)), stuffedRepos[repoID])
+    )
 
-    return await batch.commit()
+    return batch.commit()
   } catch (err) {
     throw err
   }
@@ -40,18 +35,14 @@ const deleteInstallationFromStore = async (installation, repos) => {
   try {
     let batch = store.batch()
 
-    batch.delete(store.collection('installations').doc(String(installation.id)))
-
     let reposSnapshot = await store
       .collection('repositories')
       .where('installation_id', '==', installation.id)
       .get()
 
-    reposSnapshot.forEach(repoDoc => {
-      batch.delete(repoDoc.ref)
-    })
+    reposSnapshot.forEach(repoDoc => batch.delete(repoDoc.ref))
 
-    return await batch.commit()
+    return batch.commit()
   } catch (err) {
     throw err
   }
@@ -60,30 +51,22 @@ const deleteInstallationFromStore = async (installation, repos) => {
 const addReposToStore = async (installation, repos) => {
   logger.verbose('Adding repositories to FireStore')
 
-  let repoIDs = _.map(repos, 'id')
-  let flattenedRepos = _.keyBy(normalizeRepos(repos, installation.id), 'id')
-
   try {
-    let batch = store.batch()
+    let repoIDs = fp.map('id')(repos)
+    let stuffedRepos = fp.keyBy('id')(normalizeRepos(repos, installation))
 
-    batch.set(
-      store.collection('installations').doc(String(installation.id)),
-      {
-        repositories: _.keyBy(repos, 'id')
-      },
-      { merge: true }
-    )
+    let batch = store.batch()
 
     let repositoriesCollection = store.collection('repositories')
 
-    repoIDs.forEach(repoID => {
+    repoIDs.forEach(repoID =>
       batch.set(
         repositoriesCollection.doc(String(repoID)),
-        flattenedRepos[repoID]
+        stuffedRepos[repoID]
       )
-    })
+    )
 
-    return await batch.commit()
+    return batch.commit()
   } catch (err) {
     throw err
   }
@@ -92,40 +75,30 @@ const addReposToStore = async (installation, repos) => {
 const removeReposFromStore = async (installation, repos) => {
   logger.verbose('Removing repositories from FireStore')
 
-  let repoIDs = _.map(repos, 'id')
-
   try {
-    let batch = store.batch()
+    let repoIDs = fp.map('id')(repos)
 
-    batch.update(
-      store.collection('installations').doc(String(installation.id)),
-      _.assign(
-        {},
-        ...repoIDs.map(repoID => ({
-          [`repositories.${repoID}`]: fieldValue.delete()
-        }))
-      )
-    )
+    let batch = store.batch()
 
     let repositoriesCollection = store.collection('repositories')
 
-    repoIDs.forEach(repoID => {
+    repoIDs.forEach(repoID =>
       batch.delete(repositoriesCollection.doc(String(repoID)))
-    })
+    )
 
-    return await batch.commit()
+    return batch.commit()
   } catch (err) {
     throw err
   }
 }
 
-const fetchInstallationIdFromStore = async ({ username, repository }) => {
+const fetchInstallationIdFromStore = async info => {
   logger.verbose('Fetching installation_id from FireStore')
 
   try {
     let { docs } = await store
       .collection('repositories')
-      .where('full_name', '==', `${username}/${repository}`)
+      .where('owner', '==', info.username)
       .get()
 
     let id = null

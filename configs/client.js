@@ -23,7 +23,7 @@ const configSchema = {
   },
   filename: {
     doc:
-      "Name for the data files being uploaded to the repository. You can use placeholders (denoted by curly braces), which will be dynamically replaced with the content of a field (e.g. `{fields.name}`), the content of an option (e.g. `{options.slug}`) or other dynamic placeholders such as the entry's unique id (`{@id}`).",
+      "Name for the data files being uploaded to the repository. You can use placeholders (denoted by curly braces), which will be dynamically replaced with the content of a field (e.g. `{fields.name}`), the content of an option (e.g. `{options.slug}`) or other dynamic placeholders such as the entry's unique id (`{_id}`).",
     format: String,
     default: ''
   },
@@ -35,7 +35,7 @@ const configSchema = {
   extension: {
     doc: 'Extension for the data files being uploaded to the repository.',
     format: String,
-    default: 'json'
+    default: ''
   },
   generatedFields: {
     doc:
@@ -53,9 +53,9 @@ const configSchema = {
   },
   path: {
     doc:
-      "Path to the directory where entry files are stored. You can use placeholders (denoted by curly braces), which will be dynamically replaced with the content of a field (e.g. `{fields.name}`), the content of an option (e.g. `{options.slug}`) or other dynamic placeholders such as the entry's unique id (`{@id}`).",
+      "Path to the directory where entry files are stored. You can use placeholders (denoted by curly braces), which will be dynamically replaced with the content of a field (e.g. `{fields.name}`), the content of an option (e.g. `{options.slug}`) or other dynamic placeholders such as the entry's unique id (`{_id}`).",
     format: String,
-    default: '_data/results/{@timestamp}'
+    default: '_data/results/{_date~unix}'
   },
   pullRequestBody: {
     doc:

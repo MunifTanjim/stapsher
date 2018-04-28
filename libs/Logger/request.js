@@ -20,7 +20,7 @@ const requestLogger = () => {
       'requests'
     )
 
-    fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory)
+    if (!fs.existsSync(logDirectory)) fs.mkdirSync(logDirectory)
 
     let logStream = rfs(`${env}.log`, {
       interval: '1d',

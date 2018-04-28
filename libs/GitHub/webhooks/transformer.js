@@ -50,13 +50,15 @@ const transformer = async event => {
   }
 }
 
-const normalizeRepos = (repos, installation_id) =>
+const normalizeRepos = (repos, { id, account }) =>
   repos.map(repo => ({
     ...repo,
-    installation_id
+    installation_id: id,
+    owner: account.login,
+    owner_id: account.id
   }))
 
 module.exports = {
-  transformer,
-  normalizeRepos
+  normalizeRepos,
+  transformer
 }

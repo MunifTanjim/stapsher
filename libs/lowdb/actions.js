@@ -1,4 +1,4 @@
-const _ = require('lodash')
+const fp = require('lodash/fp')
 
 const cache = _require('libs/lowdb')
 const logger = _require('libs/Logger')
@@ -7,21 +7,14 @@ const { normalizeRepos } = _require('libs/GitHub/webhooks/transformer')
 const createInstallationOnCache = async (installation, repos) => {
   logger.verbose('Creating installation on lowdb Cache')
 
-  let flattenedRepos = _.keyBy(normalizeRepos(repos, installation.id), 'id')
-
   try {
+    let stuffedRepos = fp.keyBy('id')(normalizeRepos(repos, installation))
+
     let db = await cache()
 
     db
-      .set(`installations[${installation.id}]`, {
-        installation,
-        repositories: _.keyBy(repos, 'id')
-      })
-      .write()
-
-    db
       .get('repositories')
-      .extend(flattenedRepos)
+      .extend(stuffedRepos)
       .write()
 
     return true
@@ -36,22 +29,18 @@ const deleteInstallationFromCache = async (installation, repos) => {
   try {
     let db = await cache()
 
-    let repoIds = db
-      .get(`installations[${installation.id}].repositories`)
-      .keys()
+    let repoIDs = db
+      .get('repositories')
+      .filter({ installation_id: installation.id })
+      .map('id')
       .value()
 
-    repoIds.forEach(repoId => {
+    repoIDs.forEach(repoId =>
       db
         .get('repositories')
         .unset(repoId)
         .write()
-    })
-
-    db
-      .get(`installations`)
-      .unset(installation.id)
-      .write()
+    )
 
     return true
   } catch (err) {
@@ -63,16 +52,13 @@ const addReposToCache = async (installation, repos) => {
   logger.verbose('Adding repositories to lowdb Cache')
 
   try {
+    let stuffedRepos = fp.keyBy('id')(normalizeRepos(repos, installation))
+
     let db = await cache()
 
     db
-      .get(`installations[${installation.id}].repositories`)
-      .extend(_.keyBy(repos, 'id'))
-      .write()
-
-    db
       .get('repositories')
-      .extend(_.keyBy(normalizeRepos(repos, installation.id), 'id'))
+      .extend(stuffedRepos)
       .write()
 
     return true
@@ -84,17 +70,12 @@ const addReposToCache = async (installation, repos) => {
 const removeReposFromCache = async (installation, repos) => {
   logger.verbose('Removing repositories from lowdb Cache')
 
-  let repoIDs = _.map(repos, 'id')
-
   try {
+    let repoIDs = fp.map('id')(repos)
+
     let db = await cache()
 
     repoIDs.forEach(repoID => {
-      db
-        .get(`installations[${installation.id}].repositories`)
-        .unset(repoID)
-        .write()
-
       db
         .get('repositories')
         .unset(repoID)
@@ -107,7 +88,7 @@ const removeReposFromCache = async (installation, repos) => {
   }
 }
 
-const fetchInstallationIdFromCache = async ({ username, repository }) => {
+const fetchInstallationIdFromCache = async info => {
   logger.verbose('Fetching installation_id from lowdb Cache')
 
   try {
@@ -116,7 +97,7 @@ const fetchInstallationIdFromCache = async ({ username, repository }) => {
     let id =
       db
         .get('repositories')
-        .find({ full_name: `${username}/${repository}` })
+        .find({ owner: info.username })
         .get('installation_id')
         .value() || null
 
@@ -126,30 +107,18 @@ const fetchInstallationIdFromCache = async ({ username, repository }) => {
   }
 }
 
-const addRepoToCache = async ({ installation_id, ...repo }) => {
+const addRepoToCache = async repo => {
   logger.info('Adding repository to lowdb Cache')
 
   try {
     let db = await cache()
 
-    if (!db.has(`installations[${installation_id}]`).value()) {
-      db
-        .set(`installations[${installation_id}]`, {
-          installation: { id: installation_id, account: {} },
-          repositories: {}
-        })
-        .write()
-    }
-
-    db
-      .get(`installations[${installation_id}]`)
-      .set(`repositories[${repo.id}]`, repo)
-      .write()
-
     db
       .get('repositories')
-      .set(repo.id, { ...repo, installation_id })
+      .set(repo.id, repo)
       .write()
+
+    return true
   } catch (err) {
     throw err
   }

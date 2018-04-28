@@ -1,3 +1,7 @@
+const _ = require('lodash')
+const yaml = require('js-yaml')
+const dateFormat = require('dateformat')
+
 const formatDate = (date, format = 'isoUtcDateTime') => {
   switch (format) {
     case 'unix':
@@ -26,7 +30,7 @@ const resolvePlaceholder = (property, dictionary) => {
   }
 }
 
-const getExtensionForFormat = format => {
+const getFormatExtension = format => {
   try {
     switch (format.toLowerCase()) {
       case 'json':
@@ -34,8 +38,8 @@ const getExtensionForFormat = format => {
       case 'yaml':
       case 'yml':
         return 'yaml'
-      case 'frontmatter':
-        return 'md'
+      default:
+        throwError('UNSUPPORTED_FORMAT', { format }, 422, true)
     }
   } catch (err) {
     throw err
@@ -46,15 +50,32 @@ const trimObjectStringEntries = object => {
   let newObject = {}
 
   for (let [key, value] of Object.entries(object)) {
-    newObject[key] = isString(value) ? value.trim() : value
+    newObject[key] = _.isString(value) ? value.trim() : value
   }
 
   return newObject
 }
 
+const getContentDump = (dataObject, format) => {
+  try {
+    switch (format.toLowerCase()) {
+      case 'json':
+        return JSON.stringify(dataObject)
+      case 'yaml':
+      case 'yml':
+        return yaml.safeDump(dataObject)
+      default:
+        throwError('UNSUPPORTED_FORMAT', { format }, 422, true)
+    }
+  } catch (err) {
+    throw err
+  }
+}
+
 module.exports = {
   formatDate,
   resolvePlaceholder,
-  getExtensionForFormat,
-  trimObjectStringEntries
+  getFormatExtension,
+  trimObjectStringEntries,
+  getContentDump
 }
