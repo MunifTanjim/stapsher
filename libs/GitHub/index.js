@@ -1,6 +1,5 @@
 const path = require('path')
-const { readFile } = require('fs')
-const { promisify } = require('util')
+const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const OctokitREST = require('@octokit/rest')
 
@@ -10,6 +9,10 @@ const config = require('../../configs/server')
 
 const { throwError } = _require('libs/Error')
 const { fetchInstallationId } = _require('libs/GitHub/actions')
+
+const privateKey = fs.readFileSync(
+  path.resolve(config.get('githubApp.privateKey'))
+)
 
 class GitHub {
   constructor(info = {}) {
@@ -25,23 +28,19 @@ class GitHub {
       },
       baseUrl: 'https://api.github.com'
     })
-  }
 
-  async _getPrivateKey() {
-    try {
-      let privateKeyPath = path.resolve(config.get('githubApp.privateKey'))
+    this.privateKey = privateKey
 
-      this.privateKey = await promisify(readFile)(privateKeyPath)
+    this.authedAsApp = false
+    this.authedAsInstallation = false
 
-      return this.privateKey
-    } catch (err) {
-      throw err
-    }
+    this.installation_id = null
+    this.installation_token = null
   }
 
   async _authAsApp() {
     try {
-      let privateKey = await this._getPrivateKey()
+      if (this.authedAsApp) return true
 
       this.api.authenticate({
         type: 'integration',
@@ -51,14 +50,16 @@ class GitHub {
             exp: Math.floor(new Date() / 1000) + 60, // expiration time
             iss: this.id // integration's github id
           },
-          privateKey,
+          this.privateKey,
           {
             algorithm: 'RS256'
           }
         )
       })
 
-      return true
+      this.authedAsApp = true
+
+      return this.authedAsApp
     } catch (err) {
       throw err
     }
@@ -94,6 +95,8 @@ class GitHub {
 
   async authAsInstallation() {
     try {
+      if (this.authedAsInstallation) return true
+
       let { token } = await this._getInstallationToken()
 
       this.api.authenticate({
@@ -101,7 +104,9 @@ class GitHub {
         token
       })
 
-      return true
+      this.authedAsInstallation = true
+
+      return this.authedAsInstallation
     } catch (err) {
       throw err
     }
@@ -193,3 +198,14 @@ class GitHub {
 }
 
 module.exports = GitHub
+
+let gh = new GitHub({
+  username: 'MunifTanjim',
+  repository: 'hugotest',
+  branch: 'stapsher'
+})
+
+gh
+  ._getInstallationToken()
+  .then(id => console.log(id))
+  .catch(err => console.log(err))

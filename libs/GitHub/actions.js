@@ -4,10 +4,12 @@ const parseLinkHeader = require('parse-link-header')
 const cache = _require('libs/lowdb')
 const logger = _require('libs/Logger')
 const { ResponseError } = _require('libs/Error')
-const { fetchInstallationIdFromStore } = _require('libs/Firebase/actions')
+const { fetchInstallationIdFromStore, addRepoToStore } = _require(
+  'libs/Firebase/actions'
+)
 const { fetchInstallationIdFromCache } = _require('libs/lowdb/actions')
 
-const fetchInstallationIdFromGitHub = async (info, api) => {
+const fetchInstallationIdFromGitHub = async ({ username, repository }, api) => {
   logger.verbose('Fetching installation_id from GitHub API')
 
   try {
@@ -19,8 +21,12 @@ const fetchInstallationIdFromGitHub = async (info, api) => {
         page
       })
 
-      for ({ id, account } of data) {
-        if (account.login === info.username) return id
+      for (let { id, account } of data) {
+        if (account.login === username) {
+          addRepoToStore({ username, repository }, { id, account }, api)
+
+          return id
+        }
       }
 
       if (meta.link) {

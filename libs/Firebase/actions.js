@@ -1,6 +1,12 @@
 const fp = require('lodash/fp')
 
-const { store, fieldValue } = _require('libs/Firebase')
+const {
+  store,
+  fieldValue,
+  getUserDoc,
+  getReposCollection,
+  getRepoDoc
+} = _require('libs/Firebase')
 
 const { normalizeRepos } = _require('libs/GitHub/webhooks/transformer')
 
@@ -12,15 +18,15 @@ const createInstallationOnStore = async (installation, repos) => {
   logger.verbose('Creating installation on FireStore')
 
   try {
-    let repoIDs = fp.map('id')(repos)
-    let stuffedRepos = fp.keyBy('id')(normalizeRepos(repos, installation))
+    let repoNames = fp.map('name')(repos)
+    let flattenedRepos = fp.keyBy('name')(normalizeRepos(repos, installation))
 
     let batch = store.batch()
 
-    let reposCollection = store.collection('repositories')
+    let reposCollection = getReposCollection(installation.account.login)
 
-    repoIDs.forEach(repoID =>
-      batch.set(reposCollection.doc(String(repoID)), stuffedRepos[repoID])
+    repoNames.forEach(repoName =>
+      batch.set(reposCollection.doc(repoName), flattenedRepos[repoName])
     )
 
     return batch.commit()
@@ -35,12 +41,13 @@ const deleteInstallationFromStore = async (installation, repos) => {
   try {
     let batch = store.batch()
 
-    let reposSnapshot = await store
-      .collection('repositories')
-      .where('installation_id', '==', installation.id)
-      .get()
+    let userDoc = getUserDoc(installation.account.login)
+    let reposCollection = getReposCollection(installation.account.login)
 
+    let reposSnapshot = await reposCollection.get()
     reposSnapshot.forEach(repoDoc => batch.delete(repoDoc.ref))
+
+    batch.delete(userDoc)
 
     return batch.commit()
   } catch (err) {
@@ -52,18 +59,15 @@ const addReposToStore = async (installation, repos) => {
   logger.verbose('Adding repositories to FireStore')
 
   try {
-    let repoIDs = fp.map('id')(repos)
-    let stuffedRepos = fp.keyBy('id')(normalizeRepos(repos, installation))
+    let repoNames = fp.map('name')(repos)
+    let flattenedRepos = fp.keyBy('name')(normalizeRepos(repos, installation))
 
     let batch = store.batch()
 
-    let repositoriesCollection = store.collection('repositories')
+    let reposCollection = getReposCollection(installation.account.login)
 
-    repoIDs.forEach(repoID =>
-      batch.set(
-        repositoriesCollection.doc(String(repoID)),
-        stuffedRepos[repoID]
-      )
+    repoNames.forEach(repoName =>
+      batch.set(reposCollection.doc(repoName), flattenedRepos[repoName])
     )
 
     return batch.commit()
@@ -76,15 +80,13 @@ const removeReposFromStore = async (installation, repos) => {
   logger.verbose('Removing repositories from FireStore')
 
   try {
-    let repoIDs = fp.map('id')(repos)
+    let repoNames = fp.map('name')(repos)
 
     let batch = store.batch()
 
-    let repositoriesCollection = store.collection('repositories')
+    let reposCollection = getReposCollection(installation.account.login)
 
-    repoIDs.forEach(repoID =>
-      batch.delete(repositoriesCollection.doc(String(repoID)))
-    )
+    repoNames.forEach(repoName => batch.delete(reposCollection.doc(repoName)))
 
     return batch.commit()
   } catch (err) {
@@ -92,30 +94,47 @@ const removeReposFromStore = async (installation, repos) => {
   }
 }
 
-const fetchInstallationIdFromStore = async info => {
+const fetchInstallationIdFromStore = async ({ username, repository }) => {
   logger.verbose('Fetching installation_id from FireStore')
 
   try {
-    let { docs } = await store
-      .collection('repositories')
-      .where('owner', '==', info.username)
-      .get()
+    let repoDoc = getRepoDoc(username, repository)
 
-    let id = null
+    let repoDocSnapshot = await repoDoc.get()
 
-    if (docs.length) {
-      let repo = docs[0].data()
+    let repo = repoDocSnapshot.data()
 
-      id = repo.installation_id
+    if (repo) addRepoToCache(repo)
 
-      addRepoToCache(repo).catch(err => {
-        logger.error('addRepoToCache failure', err)
-      })
-    }
+    let id = repo ? repo.installation_id : null
 
     return id
   } catch (err) {
     throw err
+  }
+}
+
+const addRepoToStore = async ({ username, repository }, installation, api) => {
+  logger.info('Adding repository to FireStore')
+
+  try {
+    let repoObject = {
+      name: repository,
+      full_name: `${username}/${repository}`
+    }
+
+    let [repo] = normalizeRepos([repoObject], installation)
+
+    let reposCollection = getReposCollection(username)
+
+    await reposCollection.doc(repository).set(repo)
+
+    addRepoToCache(repo)
+
+    return true
+  } catch (err) {
+    console.log(err)
+    logger.error('addRepoToStore failure', err)
   }
 }
 
@@ -124,5 +143,6 @@ module.exports = {
   deleteInstallationFromStore,
   addReposToStore,
   removeReposFromStore,
-  fetchInstallationIdFromStore
+  fetchInstallationIdFromStore,
+  addRepoToStore
 }

@@ -36,8 +36,8 @@ webhooks.on(
   'installation.created',
   async ({ id, name, payload: { installation, repositories } }) => {
     await Promise.all([
-      createInstallationOnCache(installation, repositories)
-      // createInstallationOnStore(installation, repositories)
+      createInstallationOnCache(installation, repositories),
+      createInstallationOnStore(installation, repositories)
     ])
   }
 )
@@ -46,8 +46,8 @@ webhooks.on(
   'installation.deleted',
   async ({ id, name, payload: { installation, repositories } }) => {
     await Promise.all([
-      deleteInstallationFromCache(installation, repositories)
-      // deleteInstallationFromStore(installation, repositories)
+      deleteInstallationFromCache(installation, repositories),
+      deleteInstallationFromStore(installation, repositories)
     ])
   }
 )
@@ -56,8 +56,8 @@ webhooks.on(
   'installation_repositories.added',
   async ({ id, name, payload: { installation, repositories } }) => {
     await Promise.all([
-      addReposToCache(installation, repositories)
-      // addReposToStore(installation, repositories)
+      addReposToCache(installation, repositories),
+      addReposToStore(installation, repositories)
     ])
   }
 )
@@ -65,8 +65,8 @@ webhooks.on(
   'installation_repositories.removed',
   async ({ id, name, payload: { installation, repositories } }) => {
     await Promise.all([
-      removeReposFromCache(installation, repositories)
-      // removeReposFromStore(installation, repositories)
+      removeReposFromCache(installation, repositories),
+      removeReposFromStore(installation, repositories)
     ])
   }
 )
