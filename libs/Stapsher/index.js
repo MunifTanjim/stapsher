@@ -5,6 +5,7 @@ const uuidv1 = require('uuid/v1')
 const GitHub = _require('libs/GitHub')
 const { hash } = _require('libs/Crypto')
 const { throwError } = _require('libs/Error')
+const { akismetCheckSpam } = _require('libs/Akismet')
 
 const { loadConfig } = _require('configs/client')
 
@@ -261,6 +262,40 @@ class Stapsher {
     }
   }
 
+  async _throwSpam() {
+    try {
+      if (!this.config.get('akismet.enabled')) return true
+
+      let entryObject = {
+        user_ip: this.clientIP,
+        user_agent: this.clientUserAgent,
+        referrer: this.clientReferrer,
+        permalink: '',
+        comment_type: this.config.get('akismet.type'),
+        comment_author: this.fields[this.config.get('akismet.fields.author')],
+        comment_author_email: this.fields[
+          this.config.get('akismet.fields.authorEmail')
+        ],
+        comment_author_url: this.fields[
+          this.config.get('akismet.fields.authorUrl')
+        ],
+        comment_content: this.fields[this.config.get('akismet.fields.content')]
+      }
+
+      let spam = await akismetCheckSpam(
+        config.get('akismet.apiKey'),
+        config.get('akismet.siteURL'),
+        entryObject
+      )
+
+      if (spam) throwError('AKISMET_IS_SPAM', { entryObject }, 400, true)
+
+      return true
+    } catch (err) {
+      throw err
+    }
+  }
+
   async processNewEntry(fields, options) {
     try {
       this.rawFields = { ...fields }
@@ -268,7 +303,7 @@ class Stapsher {
 
       this.config = await this.getConfig()
 
-      // TODO: Check for spam with Akismet
+      await _throwSpam()
 
       await this._validateFields(fields)
 

@@ -4,7 +4,7 @@ const asyncHandler = require('express-async-handler')
 const Stapsher = _require('libs/Stapsher')
 const logger = _require('libs/Logger')
 const { throwError } = _require('libs/Error')
-const { verifyAkismet } = _require('libs/Akismet')
+const { akismetVerify } = _require('libs/Akismet')
 
 router.post(
   '/new',
@@ -16,7 +16,8 @@ router.post(
 
       stapsher.addExtraInfo({
         clientIP: req.ip,
-        clientUserAgent: req.get('user-agent')
+        clientUserAgent: req.get('user-agent'),
+        clientReferrer: req.get('referrer')
       })
 
       let fields = req.body.fields
@@ -48,7 +49,7 @@ router.get(
       let enabled = config.get('akismet.enabled')
 
       if (enabled) {
-        let validAPIKey = await verifyAkismet(
+        let validAPIKey = await akismetVerify(
           config.get('akismet.apiKey'),
           config.get('akismet.siteURL')
         )

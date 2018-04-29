@@ -2,17 +2,23 @@ const akismet = require('akismet-api')
 
 const { throwError } = require('../libs/Error')
 
-const getAkismetClient = (key, blog) => akismet.client({ key, blog })
-
-const verifyAkismet = async (key, blog) => {
+const akismetVerify = async (key, blog) => {
   try {
-    return getAkismetClient(key, blog).verifyKey()
+    return akismet.client({ key, blog }).verifyKey()
   } catch (err) {
     throwError('AKISMET_VERIFICATION_FAILED', err, 500, true)
   }
 }
 
+const akismetCheckSpam = async (key, blog, entryObject) => {
+  try {
+    return akismet.client({ key, blog }).checkSpam(entryObject)
+  } catch (err) {
+    throwError('AKISMET_CHECK_SPAM_FAILED', err, 500, true)
+  }
+}
+
 module.exports = {
-  getAkismetClient,
-  verifyAkismet
+  akismetVerify,
+  akismetCheckSpam
 }
