@@ -267,9 +267,9 @@ class Stapsher {
       if (!this.config.get('akismet.enabled')) return true
 
       let entryObject = {
-        user_ip: this.clientIP,
-        user_agent: this.clientUserAgent,
-        referrer: this.clientReferrer,
+        user_ip: this.extraInfo.clientIP,
+        user_agent: this.extraInfo.clientUserAgent,
+        referrer: this.extraInfo.clientReferrer,
         permalink: '',
         comment_type: this.config.get('akismet.type'),
         comment_author: this.fields[this.config.get('akismet.fields.author')],
@@ -303,7 +303,7 @@ class Stapsher {
 
       this.config = await this.getConfig()
 
-      await _throwSpam()
+      await this._throwSpam()
 
       await this._validateFields(fields)
 
