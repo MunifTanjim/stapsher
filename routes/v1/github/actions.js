@@ -17,7 +17,8 @@ router.post(
       stapsher.addExtraInfo({
         clientIP: req.ip,
         clientUserAgent: req.get('user-agent'),
-        clientReferrer: req.get('referrer')
+        clientReferrer: req.get('referrer'),
+        recaptchaResponse: req.body['g-recaptcha-response']
       })
 
       let fields = req.body.fields

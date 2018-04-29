@@ -127,6 +127,19 @@ const configSchema = {
       'transforms:\n  email: "md5" # The email field will be MD5-hashed',
     format: Object,
     default: {}
+  },
+  reCaptcha: {
+    enabled: {
+      doc:
+        'Set to `true` to force reCAPTCHA validation, set to `false` to accept comments without reCAPTCHA.',
+      format: Boolean,
+      default: false
+    },
+    secretKey: {
+      doc: 'Encrypted Secret Key for reCAPTCHA.',
+      format: 'EncryptedString',
+      default: ''
+    }
   }
 }
 

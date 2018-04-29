@@ -262,6 +262,22 @@ class Stapsher {
     }
   }
 
+  async _checkRecaptcha() {
+    try {
+      if (!this.config.get('reCaptcha.enabled')) return true
+
+      await recaptcha(
+        config.get('reCaptcha.secretKey'),
+        this.extraInfo.recaptchaResponse,
+        this.extraInfo.clientIP
+      )
+
+      return true
+    } catch (err) {
+      throwError('RECAPTCHA_ERROR', err, 400, true)
+    }
+  }
+
   async _throwSpam() {
     try {
       if (!this.config.get('akismet.enabled')) return true
@@ -302,6 +318,8 @@ class Stapsher {
       this.options = { ...options }
 
       this.config = await this.getConfig()
+
+      await this._checkRecaptcha()
 
       await this._throwSpam()
 

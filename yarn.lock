@@ -2549,6 +2549,12 @@ readable-stream@~1.0.32:
     isarray "0.0.1"
     string_decoder "~0.10.x"
 
+recaptcha-validator@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/recaptcha-validator/-/recaptcha-validator-2.0.0.tgz#431044c4fc727ccf5890cea4a08787a8b5c0bc02"
+  dependencies:
+    debug "^2.2.0"
+
 redeyed@~1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/redeyed/-/redeyed-1.0.1.tgz#e96c193b40c0816b00aec842698e61185e55498a"
