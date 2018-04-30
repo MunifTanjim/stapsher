@@ -15,7 +15,7 @@ const privateKey = fs.readFileSync(
 )
 
 class GitHub {
-  constructor(info = {}) {
+  constructor(info = {}, apiHost) {
     this.info = info
 
     this.id = config.get('githubApp.id')
@@ -26,7 +26,7 @@ class GitHub {
         accept: 'application/vnd.github.v3+json',
         'user-agent': 'Stapsher agent'
       },
-      baseUrl: 'https://api.github.com'
+      baseUrl: apiHost
     })
 
     this.privateKey = privateKey
@@ -93,7 +93,7 @@ class GitHub {
     }
   }
 
-  async authAsInstallation() {
+  async _authAsInstallation() {
     try {
       if (this.authedAsInstallation) return true
 
@@ -107,6 +107,14 @@ class GitHub {
       this.authedAsInstallation = true
 
       return this.authedAsInstallation
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async authenticate() {
+    try {
+      return _authAsInstallation()
     } catch (err) {
       throw err
     }
@@ -198,14 +206,3 @@ class GitHub {
 }
 
 module.exports = GitHub
-
-let gh = new GitHub({
-  username: 'MunifTanjim',
-  repository: 'hugotest',
-  branch: 'stapsher'
-})
-
-gh
-  ._getInstallationToken()
-  .then(id => console.log(id))
-  .catch(err => console.log(err))

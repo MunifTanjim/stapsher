@@ -86,6 +86,14 @@ const configSchema = {
       default: 'logs',
       env: 'LOGS_PATH'
     }
+  },
+  gitlab: {
+    accessToken: {
+      doc: 'Access Token for GitLab bot account',
+      format: String,
+      default: null,
+      env: 'GITLAB_BOT_ACCESS_TOKEN'
+    }
   }
 }
 

@@ -1,19 +1,28 @@
 const router = require('express').Router()
+const asyncHandler = require('express-async-handler')
 
-const routes = {
-  home: '/',
-  encrypt: '/encrypt',
-  github: '/github.com'
-}
+const homeRouter = require('./home')
+const encryptRouter = require('./encrypt')
+const tasksRouter = require('./tasks')
+const { webhooksHandler } = _require('libs/GitHub/webhooks')
 
-const routers = {
-  home: require('./home'),
-  encrypt: require('./encrypt'),
-  github: require('./github')
-}
+router.param('platform', (req, res, next, platform) => {
+  let defaultAPIHosts = {
+    github: 'api.github.com',
+    gitlab: 'gitlab.com'
+  }
 
-Object.keys(routes).forEach(route => {
-  router.use(routes[route], routers[route])
+  let url = req.query.api || defaultAPIHosts[platform]
+
+  req.params.platformAPIHost = /^https?:\/\//.test(url) ? url : `https://${url}`
+
+  next()
 })
+
+router.use('/', homeRouter)
+router.use('/encrypt', encryptRouter)
+router.use('/:platform/:username/:repository/:branch/:entryType', tasksRouter)
+
+router.post('/github/webhook', asyncHandler(webhooksHandler))
 
 module.exports = router

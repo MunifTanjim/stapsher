@@ -3,6 +3,18 @@ const yaml = require('js-yaml')
 const dateFormat = require('dateformat')
 const markdownTable = require('markdown-table')
 
+const GitHub = _require('libs/GitHub')
+const GitLab = _require('libs/GitLab')
+
+const getPlatformConstructor = platform => {
+  switch (platform.toLowerCase()) {
+    case 'github':
+      return GitHub
+    case 'gitlab':
+      return GitLab
+  }
+}
+
 const formatDate = (date, format = 'isoUtcDateTime') => {
   switch (format) {
     case 'unix':
@@ -61,7 +73,7 @@ const getContentDump = (dataObject, format) => {
   try {
     switch (format.toLowerCase()) {
       case 'json':
-        return JSON.stringify(dataObject)
+        return JSON.stringify(dataObject, null, 2)
       case 'yaml':
       case 'yml':
         return yaml.safeDump(dataObject)
@@ -90,5 +102,6 @@ module.exports = {
   resolvePlaceholder,
   getFormatExtension,
   trimObjectStringEntries,
-  generatePullRequestBody
+  generatePullRequestBody,
+  getPlatformConstructor
 }

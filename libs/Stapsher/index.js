@@ -15,11 +15,19 @@ const {
   resolvePlaceholder,
   getFormatExtension,
   trimObjectStringEntries,
-  generatePullRequestBody
+  generatePullRequestBody,
+  getPlatformConstructor
 } = require('./utils')
 
 class Stapsher {
-  constructor({ username, repository, branch, entryType }) {
+  constructor({
+    username,
+    repository,
+    branch,
+    entryType,
+    platform,
+    platformAPIHost
+  }) {
     this._id = uuidv1()
     this._date = new Date()
 
@@ -32,7 +40,10 @@ class Stapsher {
 
     this.extraInfo = {}
 
-    this.github = new GitHub(this.info)
+    this.platform = new getPlatformConstructor(platform)(
+      this.info,
+      platformAPIHost
+    )
 
     this.configPath = 'stapsher.json'
     this.config = null
@@ -44,7 +55,7 @@ class Stapsher {
 
   async authenticate() {
     try {
-      return this.github.authAsInstallation()
+      return this.platform.authenticate()
     } catch (err) {
       throw err
     }
@@ -58,7 +69,7 @@ class Stapsher {
     try {
       if (this.config && !force) return this.config
 
-      let data = await this.github.readFile(this.configPath)
+      let data = await this.platform.readFile(this.configPath)
 
       let config = data[this.entryType]
 
@@ -345,7 +356,7 @@ class Stapsher {
           this.config.get('pullRequestBody')
         )
 
-        await this.github.writeFileAndCreatePR(
+        await this.platform.writeFileAndCreatePR(
           path,
           commitMessage,
           content,
@@ -353,7 +364,7 @@ class Stapsher {
           prBody
         )
       } else {
-        await this.github.writeFile(path, commitMessage, content)
+        await this.platform.writeFile(path, commitMessage, content)
       }
 
       let result = { fields: this.fields }
