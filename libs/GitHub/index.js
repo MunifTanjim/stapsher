@@ -11,14 +11,14 @@ const { throwError } = _require('libs/Error')
 const { fetchInstallationId } = _require('libs/GitHub/actions')
 
 const privateKey = fs.readFileSync(
-  path.resolve(config.get('githubApp.privateKey'))
+  path.resolve(config.get('github.app.privateKey'))
 )
 
 class GitHub {
   constructor(info = {}, apiHost) {
     this.info = info
 
-    this.id = config.get('githubApp.id')
+    this.id = config.get('github.app.id')
 
     this.api = OctokitREST({
       timeout: 5000,

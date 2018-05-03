@@ -26,7 +26,7 @@ class Stapsher {
     branch,
     entryType,
     platform,
-    platformAPIHost
+    platformAPIBase
   }) {
     this._id = uuidv1()
     this._date = new Date()
@@ -42,7 +42,7 @@ class Stapsher {
 
     this.platform = new getPlatformConstructor(platform)(
       this.info,
-      platformAPIHost
+      platformAPIBase
     )
 
     this.configPath = 'stapsher.json'
@@ -275,10 +275,10 @@ class Stapsher {
 
   async _checkRecaptcha() {
     try {
-      if (!this.config.get('reCaptcha.enabled')) return true
+      if (!this.config.get('recaptcha.enabled')) return true
 
       await recaptcha(
-        config.get('reCaptcha.secretKey'),
+        config.get('recaptcha.secretKey'),
         this.extraInfo.recaptchaResponse,
         this.extraInfo.clientIP
       )

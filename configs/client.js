@@ -4,153 +4,137 @@ const { decrypt } = require('../libs/Crypto')
 
 const configSchema = {
   akismet: {
-    siteURL: {
-      doc: 'URL of an Akismet account used for spam checking.',
-      docExample: 'http://yourdomain.com',
-      format: String,
-      default: null
-    },
-    apiKey: {
-      doc: 'API key to be used with Akismet.',
-      format: 'EncryptedString',
-      default: null
-    },
     enabled: {
-      doc:
-        'Whether to use Akismet to check entries for spam. This requires an Akismet account to be configured in the Staticman API instance being used.',
+      doc: 'If `true`, entries will be checked via Akismet for spam',
       format: Boolean,
       default: false
     },
+    apiKey: {
+      doc: 'Encrypted Akismet API Key',
+      format: 'EncryptedString',
+      default: null
+    },
+    siteURL: {
+      doc: 'Site URL form the Akismet account',
+      format: String,
+      default: null
+    },
     fields: {
       author: {
-        doc:
-          "Name of the field to be used as the entry author's Name in Akistmet",
+        doc: "Field name for the entry Author's Name",
         format: String,
         default: ''
       },
       authorEmail: {
-        doc:
-          "Name of the field to be used as the entry author's Email in Akistmet",
+        doc: "Field name for the entry Author's Email",
         format: String,
         default: ''
       },
       authorUrl: {
-        doc:
-          "Name of the field to be used as the entry author's URL in Akistmet",
+        doc: "Field name for the entry Author's URL",
         format: String,
         default: ''
       },
       content: {
-        doc: 'Name of the field to be used as the entry Content in Akistmet',
+        doc: 'Field name for the entry Content',
         format: String,
         default: ''
       }
     },
     type: {
-      doc:
-        "Type of entry to be sent to Akismet, e.g.: 'comment','forum-post','reply','blog-post','contact-form','signup','message' etc.",
+      doc: "Type of the entry, e.g.: 'comment','contact-form',",
       format: String,
       default: 'comment'
     }
   },
   allowedFields: {
     doc:
-      'An array with the names of the allowed fields. If any of the fields sent is not part of this list, the entry will be discarded and an error will be thrown.',
-    docExample: 'allowedFields: ["name", "email", "message"]',
+      'An array with the names of the allowed fields. If any of the fields sent is not in this list, the entry will be discarded and an error will be thrown.',
     format: Array,
     default: []
   },
   branch: {
-    doc: 'Name of the branch being used within the GitHub repository.',
+    doc: 'Name of the repository branch being used',
     format: String,
     default: 'master'
   },
   commitMessage: {
-    doc:
-      'Text to be used as the commit message when pushing entries to the GitHub repository.',
+    doc: 'Commit message for entries pushed to the repository',
     format: String,
-    default: 'add Stapsher data'
+    default: 'add data <Stapsher>'
+  },
+  extension: {
+    doc: 'Extension for the data files being pushed to the repository',
+    format: String,
+    default: ''
   },
   filename: {
     doc:
-      "Name for the data files being uploaded to the repository. You can use placeholders (denoted by curly braces), which will be dynamically replaced with the content of a field (e.g. `{fields.name}`), the content of an option (e.g. `{options.slug}`) or other dynamic placeholders such as the entry's unique id (`{_id}`).",
+      'Name for the data files being pushed to the repository (Placeholders allowed)',
     format: String,
     default: ''
   },
   format: {
-    doc: 'Format of the data files being uploaded to the repository.',
+    doc: 'Format of the data files being pushed to the repository',
     format: ['json', 'yaml', 'yml'],
     default: 'json'
   },
-  extension: {
-    doc: 'Extension for the data files being uploaded to the repository.',
-    format: String,
-    default: ''
-  },
   generatedFields: {
-    doc:
-      'List of fields to be appended to entries automatically. It consists of an object where keys correspond to the names of the fields being created and values being of mixed type. If values are objects, Staticman will look for a `type` and `options` keys inside and perform different operations based on their type; otherwise, the value will be used directly as the content of the generated field.',
-    docExample:
-      'generatedFields:\n  someField: "some string" # Simple field (string)\n  date: # Extended field (date)\n    type: date\n    options:\n      format: "timestamp-seconds"',
+    doc: 'List of fields to be appended to entries automatically',
     format: Object,
     default: {}
   },
   moderation: {
     doc:
-      'When set to `true`, a pull request with the data files will be created to allow site administrators to approve or reject an entry. Otherwise, entries will be pushed to `branch` immediately.',
+      'If `true`, a pull request with the data files will be created on the repository. Otherwise, data files will be pushed to `branch` directly.',
     format: Boolean,
-    default: true
+    default: false
   },
   path: {
     doc:
-      "Path to the directory where entry files are stored. You can use placeholders (denoted by curly braces), which will be dynamically replaced with the content of a field (e.g. `{fields.name}`), the content of an option (e.g. `{options.slug}`) or other dynamic placeholders such as the entry's unique id (`{_id}`).",
+      'Path to the directory where data files will be stored (Placeholders allowed)',
     format: String,
-    default: '_data/results/{_date~unix}'
+    default: 'data/stapsher/{_date~unix}'
   },
   pullRequestBody: {
-    doc:
-      'Text to be used as the pull request body when pushing moderated entries.',
+    doc: 'Text to be used as the Pull Request Body when moderation is enabled',
     format: String,
     default:
       "Dear human,\n\nHere's a new entry for your approval. :tada:\n\nMerge the pull request to accept it, or close it to send it away.\n\n:heart: Your friend [Staticman](https://staticman.net) :muscle:\n\n---\n"
   },
   requiredFields: {
     doc:
-      'An array with the names of the fields that must be supplies as part of an entry. If any of these is not present, the entry will be discarded and an error will be thrown.',
+      'An array with the names of the fields that are required for an entry. If any of these fields are absent, the entry will be discarded and an error will be thrown.',
     format: Array,
     default: []
   },
-  transforms: {
-    doc:
-      'List of transformations to be applied to any of the fields supplied. It consists of an object where keys correspond to the names of the fields being transformed. The value determines the type of transformation being applied.',
-    docExample:
-      'transforms:\n  email: "md5" # The email field will be MD5-hashed',
-    format: Object,
-    default: {}
-  },
-  reCaptcha: {
+  recaptcha: {
     enabled: {
-      doc:
-        'Set to `true` to force reCAPTCHA validation, set to `false` to accept comments without reCAPTCHA.',
+      doc: 'If `true`, force reCAPTCHA validation will be required',
       format: Boolean,
       default: false
     },
     secretKey: {
-      doc: 'Encrypted Secret Key for reCAPTCHA.',
+      doc: 'Encrypted Secret Key for reCAPTCHA',
       format: 'EncryptedString',
-      default: ''
+      default: null
     }
+  },
+  transforms: {
+    doc: 'List of transformations to be applied to the fields',
+    format: Object,
+    default: {}
   }
 }
 
+convict.addFormat({
+  name: 'EncryptedString',
+  validate: Boolean,
+  coerce: decrypt
+})
+
 const loadConfig = data => {
   try {
-    convict.addFormat({
-      name: 'EncryptedString',
-      validate: Boolean,
-      coerce: decrypt
-    })
-
     let config = convict(configSchema)
 
     config.load(data)

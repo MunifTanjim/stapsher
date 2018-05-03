@@ -12,9 +12,9 @@ router.param('platform', (req, res, next, platform) => {
     gitlab: 'gitlab.com'
   }
 
-  let url = req.query.api || defaultAPIHosts[platform]
+  let url = req.query.apibase || defaultAPIHosts[platform]
 
-  req.params.platformAPIHost = /^https?:\/\//.test(url) ? url : `https://${url}`
+  req.params.platformAPIBase = /^https?:\/\//.test(url) ? url : `https://${url}`
 
   next()
 })

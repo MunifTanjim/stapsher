@@ -21,7 +21,7 @@ const {
 const { transformer } = require('./transformer')
 const { errorInfo } = require('./errors')
 
-const webhookSecret = config.get('githubApp.webhookSecret')
+const webhookSecret = config.get('github.app.webhookSecret')
 
 const webhooks = new OctokitWebhooks({
   secret: webhookSecret,

@@ -4,22 +4,24 @@ const convict = require('convict')
 
 const configSchema = {
   env: {
-    doc: 'The application environment.',
-    format: ['production', 'development', 'test'],
+    doc: 'The application environment',
+    format: ['production', 'staging', 'development', 'test'],
     default: 'development',
     env: 'NODE_ENV'
   },
   port: {
-    doc: 'The port to bind the application.',
+    doc: 'The port to bind the application',
     format: 'port',
     default: 3000,
     env: 'PORT'
   },
-  rsaPrivateKey: {
-    doc: 'Path to RSA Private Key.',
-    format: String,
-    default: 'secrets/stapsher.private-key.pem',
-    env: 'RSA_PRIVATE_KEY'
+  cache: {
+    path: {
+      doc: 'Path to store Cache',
+      format: String,
+      default: 'cache',
+      env: 'CACHE_PATH'
+    }
   },
   firebase: {
     serviceAccount: {
@@ -29,39 +31,43 @@ const configSchema = {
       env: 'FIREBASE_SERVICE_ACCOUNT'
     }
   },
-  githubApp: {
-    id: {
-      doc: 'The ID of the GitHub Application.',
-      format: String,
-      default: null,
-      env: 'GITHUB_APP_ID'
-    },
-    clientId: {
-      doc:
-        'The client ID to the GitHub Application used for GitHub authentication.',
-      format: String,
-      default: null,
-      env: 'GITHUB_APP_CLIENT_ID'
-    },
-    clientSecret: {
-      doc:
-        'The client secret to the GitHub Application used for GitHub authentication.',
-      format: String,
-      default: '',
-      env: 'GITHUB_APP_CLIENT_SECRET'
-    },
-    privateKey: {
-      doc: 'Path to the private key for GitHub App',
-      format: String,
-      default: 'secrets/stapsher.private-key.pem',
-      env: 'GITHUB_APP_PRIVATE_KEY'
-    },
-    webhookSecret: {
-      doc: 'Webhook secret token for GitHub App',
-      format: String,
-      default: null,
-      env: 'GITHUB_APP_WEBHOOK_SECRET'
+  github: {
+    app: {
+      id: {
+        doc: 'GitHub Application ID',
+        format: String,
+        default: null,
+        env: 'GITHUB_APP_ID'
+      },
+      privateKey: {
+        doc: 'Path to the Private Key for GitHub Application',
+        format: String,
+        default: null,
+        env: 'GITHUB_APP_PRIVATE_KEY'
+      },
+      webhookSecret: {
+        doc: 'Secret Token for GitHub Application Webhook',
+        format: String,
+        default: null,
+        env: 'GITHUB_APP_WEBHOOK_SECRET'
+      }
     }
+  },
+  gitlab: {
+    bot: {
+      accessToken: {
+        doc: 'GitLab Bot account Access Token',
+        format: String,
+        default: null,
+        env: 'GITLAB_BOT_ACCESS_TOKEN'
+      }
+    }
+  },
+  homeRouteRedirect: {
+    doc: 'Redirect URL for home route: `/`',
+    format: String,
+    default: '',
+    env: 'HOME_ROUTE_REDIRECT'
   },
   localtunnel: {
     subdomain: {
@@ -69,14 +75,6 @@ const configSchema = {
       format: String,
       default: 'stapsher',
       env: 'LOCALTUNNEL_SUBDOMAIN'
-    }
-  },
-  cache: {
-    path: {
-      doc: 'Cache path',
-      format: String,
-      default: 'cache',
-      env: 'CACHE_PATH'
     }
   },
   logs: {
@@ -87,13 +85,11 @@ const configSchema = {
       env: 'LOGS_PATH'
     }
   },
-  gitlab: {
-    accessToken: {
-      doc: 'Access Token for GitLab bot account',
-      format: String,
-      default: null,
-      env: 'GITLAB_BOT_ACCESS_TOKEN'
-    }
+  rsaPrivateKey: {
+    doc: 'Path to the RSA Private Key for Stapsher',
+    format: String,
+    default: null,
+    env: 'RSA_PRIVATE_KEY'
   }
 }
 
