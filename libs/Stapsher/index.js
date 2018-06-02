@@ -2,12 +2,11 @@ const _ = require('lodash')
 const yaml = require('js-yaml')
 const uuidv1 = require('uuid/v1')
 
-const GitHub = _require('libs/GitHub')
-const { hash } = _require('libs/Crypto')
-const { throwError } = _require('libs/Error')
-const { akismetCheckSpam } = _require('libs/Akismet')
+const { hash } = require('../Crypto')
+const { throwError } = require('../Error')
+const { akismetCheckSpam } = require('../Akismet')
 
-const { loadConfig } = _require('configs/client')
+const { loadConfig } = require('../../configs/client')
 
 const {
   formatDate,
@@ -45,7 +44,7 @@ class Stapsher {
       platformAPIBase
     )
 
-    this.configPath = 'stapsher.json'
+    this.configPath = 'stapsher.yaml'
     this.config = null
 
     this.rawFields = null
@@ -67,21 +66,25 @@ class Stapsher {
 
   async getConfig(force = false) {
     try {
-      if (this.config && !force) return this.config
+      if (this.config && !force) {
+        return this.config
+      }
 
-      let data = await this.platform.readFile(this.configPath)
+      let blob = await this.platform.readFile(this.configPath)
+
+      let data = yaml.safeLoad(blob, 'utf8')
 
       let config = data[this.entryType]
 
       await this._validateConfig(config)
 
-      if (config.branch !== this.info.branch)
+      if (config.branch !== this.info.branch) {
         throwError(
           'BRANCH_MISMATCH',
           { api: this.info.branch, config: config.branch },
-          422,
-          true
+          422
         )
+      }
 
       return loadConfig(config)
     } catch (err) {
@@ -91,13 +94,9 @@ class Stapsher {
 
   async _validateConfig(config) {
     try {
-      if (!config)
-        throwError(
-          'MISSING_CONFIG_BLOCK',
-          { entryType: this.entryType },
-          400,
-          true
-        )
+      if (!config) {
+        throwError('MISSING_CONFIG_BLOCK', { entryType: this.entryType }, 400)
+      }
 
       let requiredOptions = ['allowedFields', 'branch', 'format', 'path']
 
@@ -105,13 +104,9 @@ class Stapsher {
         _.isUndefined(config[option])
       )
 
-      if (missingOptions.length)
-        throwError(
-          'MISSING_CONFIG_OPTIONS',
-          { options: missingOptions },
-          400,
-          true
-        )
+      if (missingOptions.length) {
+        throwError('MISSING_CONFIG_OPTIONS', { options: missingOptions }, 400)
+      }
 
       return true
     } catch (err) {
@@ -127,21 +122,18 @@ class Stapsher {
         field => _.isUndefined(fields[field]) || fields[field] === ''
       )
 
-      if (missingRequiredFields.length)
-        throwError(
-          'MISSING_REQUIRED_FIELDS',
-          { missingRequiredFields },
-          400,
-          true
-        )
+      if (missingRequiredFields.length) {
+        throwError('MISSING_REQUIRED_FIELDS', { missingRequiredFields }, 400)
+      }
 
       let allowedFields = this.config.get('allowedFields')
       let notAllowedFields = Object.keys(fields).filter(
         field => !allowedFields.includes(field) && fields[field] !== ''
       )
 
-      if (notAllowedFields.length)
-        throwError('FIELDS_NOT_ALLOWED', { notAllowedFields }, 400, true)
+      if (notAllowedFields.length) {
+        throwError('FIELDS_NOT_ALLOWED', { notAllowedFields }, 400)
+      }
 
       return true
     } catch (err) {
@@ -190,13 +182,9 @@ class Stapsher {
           if (transform.includes('hash')) {
             let [action, algorithm] = transform.split('~')
 
-            if (!algorithm)
-              throwError(
-                'MISSING_HASH_ALGORITHM',
-                { field, transform },
-                422,
-                true
-              )
+            if (!algorithm) {
+              throwError('MISSING_HASH_ALGORITHM', { field, transform }, 422)
+            }
 
             this.fields[field] = hash(this.fields[field], algorithm)
           }
@@ -285,7 +273,7 @@ class Stapsher {
 
       return true
     } catch (err) {
-      throwError('RECAPTCHA_ERROR', err, 400, true)
+      throwError('RECAPTCHA_ERROR', err, 400)
     }
   }
 
@@ -315,7 +303,9 @@ class Stapsher {
         entryObject
       )
 
-      if (spam) throwError('AKISMET_IS_SPAM', { entryObject }, 400, true)
+      if (spam) {
+        throwError('AKISMET_IS_SPAM', { entryObject }, 400)
+      }
 
       return true
     } catch (err) {
@@ -368,11 +358,16 @@ class Stapsher {
       }
 
       let result = { fields: this.fields }
-      if (this.options.redirect) result.redirect = this.options.redirect.success
+
+      if (this.options.redirect) {
+        result.redirect = this.options.redirect.success
+      }
 
       return result
     } catch (err) {
-      if (this.options.redirect) err.redirect = this.options.redirect.failure
+      if (this.options.redirect) {
+        err.redirect = this.options.redirect.failure
+      }
 
       throw err
     }

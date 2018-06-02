@@ -1,8 +1,8 @@
 const fp = require('lodash/fp')
 
-const { getCache, getReposCache } = _require('libs/lowdb')
-const logger = _require('libs/Logger')
-const { normalizeRepos } = _require('libs/GitHub/webhooks/transformer')
+const { getCache, getReposCache } = require('../lowdb')
+const logger = require('../Logger')
+const { normalizeRepos } = require('../GitHub/webhooks/transformer')
 
 const createInstallationOnCache = async (installation, repos) => {
   logger.verbose('Creating installation on lowdb Cache')

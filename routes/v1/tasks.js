@@ -1,10 +1,9 @@
 const router = require('express').Router({ mergeParams: true })
 const asyncHandler = require('express-async-handler')
 
-const Stapsher = _require('libs/Stapsher')
-const logger = _require('libs/Logger')
-const { throwError } = _require('libs/Error')
-const { akismetVerify } = _require('libs/Akismet')
+const logger = require('../../libs/Logger')
+const Stapsher = require('../../libs/Stapsher')
+const { akismetVerify } = require('../../libs/Akismet')
 
 router.post(
   '/new',

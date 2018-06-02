@@ -6,22 +6,14 @@ const configSchema = {
   env: {
     doc: 'The application environment',
     format: ['production', 'staging', 'development', 'test'],
-    default: 'development',
+    default: NODE_ENV,
     env: 'NODE_ENV'
   },
   port: {
     doc: 'The port to bind the application',
     format: 'port',
-    default: 3000,
+    default: 2027,
     env: 'PORT'
-  },
-  cache: {
-    path: {
-      doc: 'Path to store Cache',
-      format: String,
-      default: 'cache',
-      env: 'CACHE_PATH'
-    }
   },
   firebase: {
     serviceAccount: {
@@ -69,6 +61,40 @@ const configSchema = {
     default: '',
     env: 'HOME_ROUTE_REDIRECT'
   },
+  rsaPrivateKey: {
+    doc: 'Path to the RSA Private Key for Stapsher',
+    format: String,
+    default: null,
+    env: 'RSA_PRIVATE_KEY'
+  },
+  stapsher: {
+    cluster: {
+      enable: {
+        doc: 'Enable Cluster mode',
+        format: Boolean,
+        default: false,
+        env: 'STAPSHER_CLUSTER_MODE'
+      },
+      instances: {
+        doc: 'Number of instances for Cluster mode',
+        format: value => {
+          if (!Number.isInteger(value) && 'max' !== value)
+            throw TypeError('must be a Number or "max"')
+        },
+        default: 2,
+        env: 'STAPSHER_CLUSTER_INSTANCES'
+      }
+    },
+    killTimeout: {
+      doc: 'Kill Timeout',
+      format: 'nat',
+      default: 2000,
+      env: 'STAPSHER_KILL_TIMEOUT'
+    }
+  }
+}
+
+const devConfigSchema = {
   localtunnel: {
     subdomain: {
       doc: 'localtunnel subdomain for webhooks',
@@ -76,20 +102,12 @@ const configSchema = {
       default: 'stapsher',
       env: 'LOCALTUNNEL_SUBDOMAIN'
     }
-  },
-  logs: {
-    path: {
-      doc: 'Directory for server logs',
-      format: String,
-      default: 'logs',
-      env: 'LOGS_PATH'
-    }
-  },
-  rsaPrivateKey: {
-    doc: 'Path to the RSA Private Key for Stapsher',
-    format: String,
-    default: null,
-    env: 'RSA_PRIVATE_KEY'
+  }
+}
+
+if (['development'].includes(NODE_ENV)) {
+  for (let [key, value] of Object.entries(devConfigSchema)) {
+    configSchema[key] = value
   }
 }
 

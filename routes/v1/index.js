@@ -4,7 +4,7 @@ const asyncHandler = require('express-async-handler')
 const homeRouter = require('./home')
 const encryptRouter = require('./encrypt')
 const tasksRouter = require('./tasks')
-const { webhooksHandler } = _require('libs/GitHub/webhooks')
+const { webhooksHandler } = require('../../libs/GitHub/webhooks')
 
 router.param('platform', (req, res, next, platform) => {
   let defaultAPIHosts = {

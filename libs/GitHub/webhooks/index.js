@@ -2,21 +2,21 @@ const config = require('../../../configs/server')
 
 const OctokitWebhooks = require('@octokit/webhooks')
 
-const logger = _require('libs/Logger')
-const { throwError } = _require('libs/Error')
+const logger = require('../../Logger')
+const { throwError } = require('../../Error')
 
 const {
   createInstallationOnCache,
   deleteInstallationFromCache,
   addReposToCache,
   removeReposFromCache
-} = _require('libs/lowdb/actions')
+} = require('../../lowdb/actions')
 const {
   createInstallationOnStore,
   deleteInstallationFromStore,
   addReposToStore,
   removeReposFromStore
-} = _require('libs/Firebase/actions')
+} = require('../../Firebase/actions')
 
 const { transformer } = require('./transformer')
 const { errorInfo } = require('./errors')
@@ -92,7 +92,7 @@ const webhooksHandler = async (req, res, next) => {
 
     let { code, statusCode } = errorInfo(err)
 
-    throwError(code, err, statusCode, true)
+    throwError(code, err, statusCode)
   }
 }
 

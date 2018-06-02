@@ -6,7 +6,7 @@ const { default: GitLabAPI } = require('gitlab')
 
 const config = require('../../configs/server')
 
-const { throwError } = _require('libs/Error')
+const { throwError } = require('../Error')
 
 class GitLab {
   constructor(info = {}, apiBase) {
@@ -53,14 +53,16 @@ class GitLab {
           content = yaml.safeLoad(blob, 'utf8')
           break
         default:
-          throwError('UNSUPPORTED_EXTENSION', { extension }, 422, true)
+          throwError('UNSUPPORTED_EXTENSION', { extension }, 422)
       }
 
       return content
     } catch (err) {
-      if (err instanceof SyntaxError)
-        throwError('FILE_PARSE_FAILED', err, 422, true)
-      else throw err
+      if (err instanceof SyntaxError) {
+        throwError('FILE_PARSE_FAILED', err, 422)
+      } else {
+        throw err
+      }
     }
   }
 

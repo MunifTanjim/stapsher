@@ -7,8 +7,8 @@ const yaml = require('js-yaml')
 
 const config = require('../../configs/server')
 
-const { throwError } = _require('libs/Error')
-const { fetchInstallationId } = _require('libs/GitHub/actions')
+const { throwError } = require('../Error')
+const { fetchInstallationId } = require('../GitHub/actions')
 
 const privateKey = fs.readFileSync(
   path.resolve(config.get('github.app.privateKey'))
@@ -144,14 +144,16 @@ class GitHub {
           content = yaml.safeLoad(blob, 'utf8')
           break
         default:
-          throwError('UNSUPPORTED_EXTENSION', { extension }, 422, true)
+          throwError('UNSUPPORTED_EXTENSION', { extension }, 422)
       }
 
       return content
     } catch (err) {
-      if (err instanceof SyntaxError)
-        throwError('FILE_PARSE_FAILED', err, 422, true)
-      else throw err
+      if (err instanceof SyntaxError) {
+        throwError('FILE_PARSE_FAILED', err, 422)
+      } else {
+        throw err
+      }
     }
   }
 

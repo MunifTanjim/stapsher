@@ -6,13 +6,13 @@ const {
   getUserDoc,
   getReposCollection,
   getRepoDoc
-} = _require('libs/Firebase')
+} = require('../Firebase')
 
-const { normalizeRepos } = _require('libs/GitHub/webhooks/transformer')
+const { normalizeRepos } = require('../GitHub/webhooks/transformer')
 
-const { addRepoToCache } = _require('libs/lowdb/actions')
+const { addRepoToCache } = require('../lowdb/actions')
 
-const logger = _require('libs/Logger')
+const logger = require('../Logger')
 
 const createInstallationOnStore = async (installation, repos) => {
   logger.verbose('Creating installation on FireStore')

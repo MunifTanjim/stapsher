@@ -1,9 +1,15 @@
 const config = require('./configs/server')
 const app = require('./app')
-const logger = _require('libs/Logger')
+const logger = require('./libs/Logger')
+const { gracefulShutdownHandler } = require('./libs/Error/handlers')
 
 const port = config.get('port')
 
-app.listen(port, () => {
+server = app.listen(port)
+
+server.on('listening', () => {
   logger.info(`Server started! Listening to port: ${port}`)
 })
+
+process.on('SIGINT', () => gracefulShutdownHandler(server))
+process.on('SIGTERM', () => gracefulShutdownHandler(server))

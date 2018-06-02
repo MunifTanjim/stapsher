@@ -1,10 +1,54 @@
 const _ = require('lodash')
-const yaml = require('js-yaml')
 const dateFormat = require('dateformat')
 const markdownTable = require('markdown-table')
+const yaml = require('js-yaml')
 
-const GitHub = _require('libs/GitHub')
-const GitLab = _require('libs/GitLab')
+const GitHub = require('../GitHub')
+const GitLab = require('../GitLab')
+
+const generatePullRequestBody = (dataObject, introduction) => {
+  let tableData = [['Field', 'Value']]
+
+  for (let [field, value] of Object.entries(dataObject)) {
+    tableData.push([field, value])
+  }
+
+  let body = `${introduction}\n${markdownTable(tableData)}`
+
+  return body
+}
+
+const getContentDump = (dataObject, format) => {
+  try {
+    switch (format.toLowerCase()) {
+      case 'json':
+        return JSON.stringify(dataObject, null, 2)
+      case 'yaml':
+      case 'yml':
+        return yaml.safeDump(dataObject)
+      default:
+        throwError('UNSUPPORTED_FORMAT', { format }, 422)
+    }
+  } catch (err) {
+    throw err
+  }
+}
+
+const getFormatExtension = format => {
+  try {
+    switch (format.toLowerCase()) {
+      case 'json':
+        return 'json'
+      case 'yaml':
+      case 'yml':
+        return 'yaml'
+      default:
+        throwError('UNSUPPORTED_FORMAT', { format }, 422)
+    }
+  } catch (err) {
+    throw err
+  }
+}
 
 const getPlatformConstructor = platform => {
   switch (platform.toLowerCase()) {
@@ -43,22 +87,6 @@ const resolvePlaceholder = (property, dictionary) => {
   }
 }
 
-const getFormatExtension = format => {
-  try {
-    switch (format.toLowerCase()) {
-      case 'json':
-        return 'json'
-      case 'yaml':
-      case 'yml':
-        return 'yaml'
-      default:
-        throwError('UNSUPPORTED_FORMAT', { format }, 422, true)
-    }
-  } catch (err) {
-    throw err
-  }
-}
-
 const trimObjectStringEntries = object => {
   let newObject = {}
 
@@ -69,39 +97,12 @@ const trimObjectStringEntries = object => {
   return newObject
 }
 
-const getContentDump = (dataObject, format) => {
-  try {
-    switch (format.toLowerCase()) {
-      case 'json':
-        return JSON.stringify(dataObject, null, 2)
-      case 'yaml':
-      case 'yml':
-        return yaml.safeDump(dataObject)
-      default:
-        throwError('UNSUPPORTED_FORMAT', { format }, 422, true)
-    }
-  } catch (err) {
-    throw err
-  }
-}
-
-const generatePullRequestBody = (dataObject, introduction) => {
-  let tableData = [['Field', 'Value']]
-
-  for (let [field, value] of Object.entries(dataObject))
-    tableData.push([field, value])
-
-  let body = introduction + '\n' + markdownTable(tableData)
-
-  return body
-}
-
 module.exports = {
-  formatDate,
-  getContentDump,
-  resolvePlaceholder,
-  getFormatExtension,
-  trimObjectStringEntries,
   generatePullRequestBody,
-  getPlatformConstructor
+  getContentDump,
+  getFormatExtension,
+  getPlatformConstructor,
+  formatDate,
+  resolvePlaceholder,
+  trimObjectStringEntries
 }

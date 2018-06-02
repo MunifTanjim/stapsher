@@ -1,13 +1,14 @@
 const isNull = require('lodash.isnull')
 const parseLinkHeader = require('parse-link-header')
 
-const cache = _require('libs/lowdb')
-const logger = _require('libs/Logger')
-const { ResponseError } = _require('libs/Error')
-const { fetchInstallationIdFromStore, addRepoToStore } = _require(
-  'libs/Firebase/actions'
-)
-const { fetchInstallationIdFromCache } = _require('libs/lowdb/actions')
+const cache = require('../lowdb')
+const logger = require('../Logger')
+const { ResponseError } = require('../Error')
+const {
+  fetchInstallationIdFromStore,
+  addRepoToStore
+} = require('../Firebase/actions')
+const { fetchInstallationIdFromCache } = require('../lowdb/actions')
 
 const fetchInstallationIdFromGitHub = async ({ username, repository }, api) => {
   logger.verbose('Fetching installation_id from GitHub API')

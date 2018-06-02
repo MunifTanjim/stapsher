@@ -59,6 +59,7 @@ typings/
 !.env.example
 
 # Ignored directories
+.git
 cache
 secrets
 
