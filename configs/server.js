@@ -55,12 +55,6 @@ const configSchema = {
       }
     }
   },
-  homeRouteRedirect: {
-    doc: 'Redirect URL for home route: `/`',
-    format: String,
-    default: '',
-    env: 'HOME_ROUTE_REDIRECT'
-  },
   rsaPrivateKey: {
     doc: 'Path to the RSA Private Key for Stapsher',
     format: String,
