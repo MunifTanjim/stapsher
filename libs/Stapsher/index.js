@@ -263,7 +263,7 @@ class Stapsher {
 
   async _checkRecaptcha() {
     try {
-      if (!this.config.get('recaptcha.enabled')) return true
+      if (!this.config.get('recaptcha.enable')) return true
 
       await recaptcha(
         config.get('recaptcha.secretKey'),
@@ -279,7 +279,7 @@ class Stapsher {
 
   async _throwSpam() {
     try {
-      if (!this.config.get('akismet.enabled')) return true
+      if (!this.config.get('akismet.enable')) return true
 
       let entryObject = {
         user_ip: this.extraInfo.clientIP,
@@ -299,7 +299,7 @@ class Stapsher {
 
       let spam = await akismetCheckSpam(
         config.get('akismet.apiKey'),
-        config.get('akismet.siteURL'),
+        config.get('akismet.siteUrl'),
         entryObject
       )
 

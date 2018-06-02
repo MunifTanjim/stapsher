@@ -46,12 +46,12 @@ router.get(
 
       config = await stapsher.getConfig()
 
-      let enabled = config.get('akismet.enabled')
+      let enabled = config.get('akismet.enable')
 
       if (enabled) {
         let validAPIKey = await akismetVerify(
           config.get('akismet.apiKey'),
-          config.get('akismet.siteURL')
+          config.get('akismet.siteUrl')
         )
 
         return res.send({ enabled, validAPIKey })

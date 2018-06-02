@@ -4,7 +4,7 @@ const { decrypt } = require('../libs/Crypto')
 
 const configSchema = {
   akismet: {
-    enabled: {
+    enable: {
       doc: 'If `true`, entries will be checked via Akismet for spam',
       format: Boolean,
       default: false
@@ -14,7 +14,7 @@ const configSchema = {
       format: 'EncryptedString',
       default: null
     },
-    siteURL: {
+    siteUrl: {
       doc: 'Site URL form the Akismet account',
       format: String,
       default: null
@@ -111,7 +111,7 @@ const configSchema = {
     default: []
   },
   recaptcha: {
-    enabled: {
+    enable: {
       doc: 'If `true`, reCAPTCHA validation will be required',
       format: Boolean,
       default: false
