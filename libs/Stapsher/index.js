@@ -25,7 +25,7 @@ class Stapsher {
     branch,
     entryType,
     platform,
-    platformAPIBase
+    platformBaseUrl
   }) {
     this._id = uuidv1()
     this._date = new Date()
@@ -41,7 +41,7 @@ class Stapsher {
 
     this.platform = new getPlatformConstructor(platform)(
       this.info,
-      platformAPIBase
+      platformBaseUrl
     )
 
     this.configPath = 'stapsher.yaml'

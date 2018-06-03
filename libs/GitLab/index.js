@@ -9,13 +9,13 @@ const config = require('../../configs/server')
 const { throwError } = require('../Error')
 
 class GitLab {
-  constructor(info = {}, apiBase) {
+  constructor(info = {}, baseUrl) {
     this.info = info
 
     this.accessToken = config.get('gitlab.bot.accessToken')
 
     this.api = new GitLabAPI({
-      url: apiBase,
+      url: baseUrl,
       token: this.accessToken
     })
   }

@@ -15,7 +15,7 @@ const privateKey = fs.readFileSync(
 )
 
 class GitHub {
-  constructor(info = {}, apiHost) {
+  constructor(info = {}, baseUrl) {
     this.info = info
 
     this.id = config.get('github.app.id')
@@ -26,7 +26,7 @@ class GitHub {
         accept: 'application/vnd.github.v3+json',
         'user-agent': 'Stapsher agent'
       },
-      baseUrl: apiHost
+      baseUrl
     })
 
     this.privateKey = privateKey
