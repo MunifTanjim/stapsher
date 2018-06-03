@@ -79,10 +79,10 @@ class GitHub {
     try {
       await this._authAsApp()
 
-      let installation_id = await this._getInstallationID()
+      let installationId = await this._getInstallationID()
 
       let { data } = await this.api.apps.createInstallationToken({
-        installation_id
+        installation_id: installationId
       })
 
       this.installation_token = data
@@ -114,7 +114,7 @@ class GitHub {
 
   async authenticate() {
     try {
-      return _authAsInstallation()
+      return this._authAsInstallation()
     } catch (err) {
       throw err
     }

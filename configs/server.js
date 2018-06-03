@@ -1,5 +1,7 @@
 require('./env')
 
+/* global NODE_ENV:false */
+
 const convict = require('convict')
 
 const configSchema = {
@@ -72,7 +74,7 @@ const configSchema = {
       instances: {
         doc: 'Number of instances for Cluster mode',
         format: value => {
-          if (!Number.isInteger(value) && 'max' !== value)
+          if (!Number.isInteger(value) && value !== 'max')
             throw TypeError('must be a Number or "max"')
         },
         default: 2,

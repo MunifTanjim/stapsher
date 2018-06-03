@@ -1,5 +1,3 @@
-const logger = require('../Logger')
-
 class StapsherError extends Error {
   constructor(errorCode, cause, statusCode, mask) {
     super(errorCode)

@@ -1,7 +1,6 @@
 const router = require('express').Router({ mergeParams: true })
 const asyncHandler = require('express-async-handler')
 
-const logger = require('../../libs/Logger')
 const Stapsher = require('../../libs/Stapsher')
 const { akismetVerify } = require('../../libs/Akismet')
 
@@ -44,7 +43,7 @@ router.get(
 
       await stapsher.authenticate()
 
-      config = await stapsher.getConfig()
+      let config = await stapsher.getConfig()
 
       let enabled = config.get('akismet.enable')
 

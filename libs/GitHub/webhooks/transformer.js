@@ -21,7 +21,7 @@ const installation = async ({ id, name, payload }) => {
   return event
 }
 
-const installation_repositories = async ({ id, name, payload }) => {
+const installationRepositories = async ({ id, name, payload }) => {
   let event = { id, name }
 
   event.payload = {
@@ -41,7 +41,7 @@ const transformer = async event => {
       case 'installation':
         return installation(event)
       case 'installation_repositories':
-        return installation_repositories(event)
+        return installationRepositories(event)
       default:
         return event
     }

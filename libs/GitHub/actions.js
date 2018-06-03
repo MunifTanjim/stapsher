@@ -1,7 +1,6 @@
 const isNull = require('lodash.isnull')
 const parseLinkHeader = require('parse-link-header')
 
-const cache = require('../lowdb')
 const logger = require('../Logger')
 const { ResponseError } = require('../Error')
 const {
@@ -14,8 +13,8 @@ const fetchInstallationIdFromGitHub = async ({ username, repository }, api) => {
   logger.verbose('Fetching installation_id from GitHub API')
 
   try {
-    let page = 1,
-      hasNext = true
+    let page = 1
+    let hasNext = true
 
     while (hasNext) {
       let { data, meta } = await api.apps.getInstallations({

@@ -1,5 +1,3 @@
-const fs = require('fs')
-const path = require('path')
 const yaml = require('js-yaml')
 
 const { default: GitLabAPI } = require('gitlab')
@@ -21,11 +19,7 @@ class GitLab {
   }
 
   async authenticate() {
-    try {
-      return true
-    } catch (err) {
-      throw err
-    }
+    return true
   }
 
   async readFile(path) {
@@ -66,12 +60,12 @@ class GitLab {
     }
   }
 
-  async writeFile(path, commit_message, content, branch = this.info.branch) {
+  async writeFile(path, commitMessage, content, branch = this.info.branch) {
     try {
       let projectID = `${this.info.username}/${this.info.repository}`
 
       let data = this.api.RepositoryFiles.create(projectID, path, branch, {
-        commit_message,
+        commit_message: commitMessage,
         content
       })
 

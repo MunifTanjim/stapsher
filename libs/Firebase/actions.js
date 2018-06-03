@@ -2,7 +2,6 @@ const fp = require('lodash/fp')
 
 const {
   store,
-  fieldValue,
   getUserDoc,
   getReposCollection,
   getRepoDoc

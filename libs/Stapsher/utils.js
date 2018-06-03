@@ -6,6 +6,8 @@ const yaml = require('js-yaml')
 const GitHub = require('../GitHub')
 const GitLab = require('../GitLab')
 
+const { throwError } = require('../Error')
+
 const generatePullRequestBody = (dataObject, introduction) => {
   let tableData = [['Field', 'Value']]
 
@@ -50,7 +52,7 @@ const getFormatExtension = format => {
   }
 }
 
-const getPlatformConstructor = platform => {
+const GetPlatformConstructor = platform => {
   switch (platform.toLowerCase()) {
     case 'github':
       return GitHub
@@ -101,7 +103,7 @@ module.exports = {
   generatePullRequestBody,
   getContentDump,
   getFormatExtension,
-  getPlatformConstructor,
+  GetPlatformConstructor,
   formatDate,
   resolvePlaceholder,
   trimObjectStringEntries

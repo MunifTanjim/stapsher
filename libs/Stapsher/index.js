@@ -1,6 +1,7 @@
 const _ = require('lodash')
 const yaml = require('js-yaml')
 const uuidv1 = require('uuid/v1')
+const recaptcha = require('recaptcha-validator')
 
 const { hash } = require('../Crypto')
 const { throwError } = require('../Error')
@@ -15,7 +16,7 @@ const {
   getFormatExtension,
   trimObjectStringEntries,
   generatePullRequestBody,
-  getPlatformConstructor
+  GetPlatformConstructor
 } = require('./utils')
 
 class Stapsher {
@@ -39,7 +40,7 @@ class Stapsher {
 
     this.extraInfo = {}
 
-    this.platform = new getPlatformConstructor(platform)(
+    this.platform = new GetPlatformConstructor(platform)(
       this.info,
       platformBaseUrl
     )
@@ -180,7 +181,7 @@ class Stapsher {
 
         transforms.forEach(transform => {
           if (transform.includes('hash')) {
-            let [action, algorithm] = transform.split('~')
+            let algorithm = transform.split('~')[1] // 0: action
 
             if (!algorithm) {
               throwError('MISSING_HASH_ALGORITHM', { field, transform }, 422)
@@ -266,7 +267,7 @@ class Stapsher {
       if (!this.config.get('recaptcha.enable')) return true
 
       await recaptcha(
-        config.get('recaptcha.secretKey'),
+        this.config.get('recaptcha.secretKey'),
         this.extraInfo.recaptchaResponse,
         this.extraInfo.clientIP
       )
@@ -298,8 +299,8 @@ class Stapsher {
       }
 
       let spam = await akismetCheckSpam(
-        config.get('akismet.apiKey'),
-        config.get('akismet.siteUrl'),
+        this.config.get('akismet.apiKey'),
+        this.config.get('akismet.siteUrl'),
         entryObject
       )
 

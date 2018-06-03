@@ -2,7 +2,6 @@ const ExpressBrute = require('express-brute')
 const LowdbStore = require('express-brute-lowdb')
 
 const { FileSync, Memory } = require('./lowdb').adapters
-const logger = require('./Logger')
 
 const { bruteStoreErrorHandler } = require('./Error/handlers')
 const httpCodes = require('./Error/httpcodes')

@@ -73,10 +73,10 @@ webhooks.on(
 
 const webhooksHandler = async (req, res, next) => {
   try {
-    let id = req.headers['x-github-delivery'],
-      name = req.headers['x-github-event'],
-      payload = req.body,
-      signature = req.headers['x-hub-signature']
+    let id = req.headers['x-github-delivery']
+    let name = req.headers['x-github-event']
+    let payload = req.body
+    let signature = req.headers['x-hub-signature']
 
     await webhooks.verifyAndReceive({ id, name, payload, signature })
 

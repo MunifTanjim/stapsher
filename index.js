@@ -5,7 +5,7 @@ const { gracefulShutdownHandler } = require('./libs/Error/handlers')
 
 const port = config.get('port')
 
-server = app.listen(port)
+const server = app.listen(port)
 
 server.on('listening', () => {
   logger.info(`Server started! Listening to port: ${port}`)

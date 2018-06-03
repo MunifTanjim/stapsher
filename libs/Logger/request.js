@@ -5,8 +5,6 @@ const rfs = require('rotating-file-stream')
 
 const config = require('../../configs/server')
 
-const logger = require('../Logger')
-
 const env = config.get('env')
 
 const requestLogger = () => {
