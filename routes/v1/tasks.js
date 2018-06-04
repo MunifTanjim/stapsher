@@ -3,6 +3,7 @@ const asyncHandler = require('express-async-handler')
 
 const Stapsher = require('../../libs/Stapsher')
 const { akismetVerify } = require('../../libs/Akismet')
+const { incrementEntryCountCache } = require('../../libs/lowdb/actions')
 
 router.post(
   '/new',
@@ -29,6 +30,8 @@ router.post(
 
       if (redirect) res.redirect(redirect)
       else res.send(result)
+
+      incrementEntryCountCache()
     } catch (err) {
       throw err
     }

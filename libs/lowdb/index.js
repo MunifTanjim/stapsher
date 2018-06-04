@@ -14,36 +14,45 @@ if (!fs.existsSync(cachePath)) {
   fs.mkdirSync(cachePath)
 }
 
-const adapter = new FileAsync(`${cachePath}/cache.json`)
+const usersAdapter = new FileAsync(`${cachePath}/users.json`)
+const countsAdapter = new FileAsync(`${cachePath}/counts.json`)
 
-const getCache = async () => {
+const getCountsCache = async () => {
   try {
-    let cacheRoot = await lowdb(adapter)
+    let countsCache = await lowdb(countsAdapter)
 
-    return cacheRoot.defaults({ users: {} })
+    return countsCache.defaults({ entries: 0 })
   } catch (err) {
     throw err
   }
 }
+
+const getUsersCache = async () => {
+  try {
+    return lowdb(usersAdapter)
+  } catch (err) {
+    throw err
+  }
+}
+
 const getReposCache = async username => {
   try {
     if (!username) {
       throwError('[getReposCache] username required', { username }, 500, true)
     }
 
-    let cacheRoot = await getCache()
+    let usersCache = await getUsersCache()
 
-    return cacheRoot.has(`users.${username}`).value()
-      ? cacheRoot.get(`users.${username}.repos`)
-      : cacheRoot
-          .set(`users.${username}`, { repos: {} })
-          .get(`users.${username}.repos`)
+    return usersCache.has(`${username}`).value()
+      ? usersCache.get(`${username}.repos`)
+      : usersCache.set(`${username}`, { repos: {} }).get(`${username}.repos`)
   } catch (err) {
     throw err
   }
 }
 
-module.exports.getCache = getCache
+module.exports.getCountsCache = getCountsCache
+module.exports.getUsersCache = getUsersCache
 module.exports.getReposCache = getReposCache
 
 module.exports.adapters = {

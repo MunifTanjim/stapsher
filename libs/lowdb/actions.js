@@ -1,6 +1,6 @@
 const fp = require('lodash/fp')
 
-const { getCache, getReposCache } = require('../lowdb')
+const { getCountsCache, getUsersCache, getReposCache } = require('../lowdb')
 const logger = require('../Logger')
 const { normalizeRepos } = require('../GitHub/webhooks/transformer')
 
@@ -24,12 +24,9 @@ const deleteInstallationFromCache = async (installation, repos) => {
   logger.verbose('Deleting installation from lowdb Cache')
 
   try {
-    let cacheRoot = await getCache()
+    let usersCache = await getUsersCache()
 
-    cacheRoot
-      .get('users')
-      .unset(installation.account.login)
-      .write()
+    usersCache.unset(installation.account.login).write()
 
     return true
   } catch (err) {
@@ -43,9 +40,9 @@ const addReposToCache = async (installation, repos) => {
   try {
     let flattenedRepos = fp.keyBy('name')(normalizeRepos(repos, installation))
 
-    let db = await getReposCache(installation.account.login)
+    let cache = await getReposCache(installation.account.login)
 
-    db.extend(flattenedRepos).write()
+    cache.extend(flattenedRepos).write()
 
     return true
   } catch (err) {
@@ -59,9 +56,9 @@ const removeReposFromCache = async (installation, repos) => {
   try {
     let repoNames = fp.map('name')(repos)
 
-    let db = await getReposCache(installation.account.login)
+    let cache = await getReposCache(installation.account.login)
 
-    repoNames.forEach(repoName => db.unset(repoName).write())
+    repoNames.forEach(repoName => cache.unset(repoName).write())
 
     return true
   } catch (err) {
@@ -73,10 +70,10 @@ const fetchInstallationIdFromCache = async ({ username, repository }) => {
   logger.verbose('Fetching installation_id from lowdb Cache')
 
   try {
-    let db = await getReposCache(username)
+    let cache = await getReposCache(username)
 
     let id =
-      db
+      cache
         .find({ full_name: `${username}/${repository}` })
         .get('installation_id')
         .value() || null
@@ -91,13 +88,27 @@ const addRepoToCache = async repo => {
   logger.info('Adding repository to lowdb Cache')
 
   try {
-    let db = await getReposCache(repo.owner)
+    let cache = await getReposCache(repo.owner)
 
-    db.set(repo.name, repo).write()
+    cache.set(repo.name, repo).write()
 
     return true
   } catch (err) {
     logger.error('addRepoToCache failure', err)
+  }
+}
+
+const incrementEntryCountCache = async () => {
+  try {
+    let cache = await getCountsCache()
+
+    let curr = cache.get('entries').value()
+
+    cache.set('entries', curr + 1).write()
+
+    return curr + 1
+  } catch (err) {
+    logger.error('incrementEntryCountCache failure', err)
   }
 }
 
@@ -107,5 +118,6 @@ module.exports = {
   addReposToCache,
   removeReposFromCache,
   fetchInstallationIdFromCache,
-  addRepoToCache
+  addRepoToCache,
+  incrementEntryCountCache
 }
