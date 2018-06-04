@@ -132,7 +132,6 @@ const addRepoToStore = async ({ username, repository }, installation, api) => {
 
     return true
   } catch (err) {
-    console.log(err)
     logger.error('addRepoToStore failure', err)
   }
 }

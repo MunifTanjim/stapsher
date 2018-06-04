@@ -11,7 +11,8 @@
     "docker:tag": ".scripts/docker/tag.sh",
     "start": "node index.js",
     "start:localtunnel": "node libs/localtunnel.js",
-    "start:pm2": "pm2-runtime configs/pm2.config.js"
+    "start:pm2": "pm2-runtime configs/pm2.config.js",
+    "test": "jest"
   },
   "dependencies": {
     "@octokit/rest": "^15.2.6",
@@ -48,6 +49,7 @@
     "winston-daily-rotate-file": "^3.2.1"
   },
   "devDependencies": {
+    "@types/jest": "^23.0.0",
     "eslint": "^4.19.1",
     "eslint-config-prettier": "^2.9.0",
     "eslint-config-standard": "^11.0.0",
@@ -57,7 +59,9 @@
     "eslint-plugin-prettier": "^2.6.0",
     "eslint-plugin-promise": "^3.8.0",
     "eslint-plugin-standard": "^3.1.0",
+    "jest": "^23.1.0",
     "localtunnel": "^1.9.0",
+    "nock": "^9.3.0",
     "prettier": "^1.13.4"
   }
 }

@@ -20,7 +20,7 @@ const generatePullRequestBody = (dataObject, introduction) => {
   return body
 }
 
-const getContentDump = (dataObject, format) => {
+const getContentDump = (dataObject, format = '') => {
   try {
     switch (format.toLowerCase()) {
       case 'json':

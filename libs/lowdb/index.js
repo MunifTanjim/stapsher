@@ -8,14 +8,18 @@ const FileAsync = require('lowdb/adapters/FileAsync')
 
 const { throwError } = require('../../libs/Error')
 
+const config = require('../../configs/server')
+
 const cachePath = path.resolve('cache')
 
 if (!fs.existsSync(cachePath)) {
   fs.mkdirSync(cachePath)
 }
 
-const usersAdapter = new FileAsync(`${cachePath}/users.json`)
-const countsAdapter = new FileAsync(`${cachePath}/counts.json`)
+const CacheAdapter = ['test'].includes(config.get('env')) ? Memory : FileAsync
+
+const countsAdapter = new CacheAdapter(`${cachePath}/counts.json`)
+const usersAdapter = new CacheAdapter(`${cachePath}/users.json`)
 
 const getCountsCache = async () => {
   try {

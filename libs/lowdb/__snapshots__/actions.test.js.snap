@@ -1,0 +1,167 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`lowdb:actions addRepoToCache works as expected 1`] = `
+{
+  "Harold": {
+    "repos": {
+      "TheMachine": {
+        "id": 1,
+        "name": "TheMachine",
+        "full_name": "Harold/TheMachine",
+        "installation_id": 10,
+        "owner": "Harold",
+        "owner_id": 7
+      }
+    }
+  },
+  "Arthur": {
+    "repos": {
+      "Samaritan": {
+        "id": 666,
+        "name": "Samaritan",
+        "full_name": "Arthur/Samaritan",
+        "installation_id": 11,
+        "owner": "Arthur",
+        "owner_id": 13
+      }
+    }
+  }
+}
+`;
+
+exports[`lowdb:actions addReposToCache works as expected 1`] = `
+{
+  "Harold": {
+    "repos": {
+      "TheMachine": {
+        "id": 1,
+        "name": "TheMachine",
+        "full_name": "Harold/TheMachine",
+        "installation_id": 10,
+        "owner": "Harold",
+        "owner_id": 7
+      },
+      "GodMode": {
+        "id": 0,
+        "name": "GodMode",
+        "full_name": "Harold/GodMode",
+        "installation_id": 10,
+        "owner": "Harold",
+        "owner_id": 7
+      },
+      "If-Then-Else": {
+        "id": 2027,
+        "name": "If-Then-Else",
+        "full_name": "Harold/If-Then-Else",
+        "installation_id": 10,
+        "owner": "Harold",
+        "owner_id": 7
+      }
+    }
+  },
+  "Arthur": {
+    "repos": {
+      "Samaritan": {
+        "id": 666,
+        "name": "Samaritan",
+        "full_name": "Arthur/Samaritan",
+        "installation_id": 11,
+        "owner": "Arthur",
+        "owner_id": 13
+      }
+    }
+  }
+}
+`;
+
+exports[`lowdb:actions createInstallationOnCache works as expected 1`] = `
+{
+  "Harold": {
+    "repos": {
+      "TheMachine": {
+        "id": 1,
+        "name": "TheMachine",
+        "full_name": "Harold/TheMachine",
+        "installation_id": 10,
+        "owner": "Harold",
+        "owner_id": 7
+      }
+    }
+  }
+}
+`;
+
+exports[`lowdb:actions createInstallationOnCache works as expected 2`] = `
+{
+  "Harold": {
+    "repos": {
+      "TheMachine": {
+        "id": 1,
+        "name": "TheMachine",
+        "full_name": "Harold/TheMachine",
+        "installation_id": 10,
+        "owner": "Harold",
+        "owner_id": 7
+      }
+    }
+  },
+  "Arthur": {
+    "repos": {
+      "Samaritan": {
+        "id": 666,
+        "name": "Samaritan",
+        "full_name": "Arthur/Samaritan",
+        "installation_id": 11,
+        "owner": "Arthur",
+        "owner_id": 13
+      }
+    }
+  }
+}
+`;
+
+exports[`lowdb:actions deleteInstallationFromCache works as expected 1`] = `
+{
+  "Harold": {
+    "repos": {
+      "TheMachine": {
+        "id": 1,
+        "name": "TheMachine",
+        "full_name": "Harold/TheMachine",
+        "installation_id": 10,
+        "owner": "Harold",
+        "owner_id": 7
+      }
+    }
+  }
+}
+`;
+
+exports[`lowdb:actions removeReposFromCache works as expected 1`] = `
+{
+  "Harold": {
+    "repos": {
+      "TheMachine": {
+        "id": 1,
+        "name": "TheMachine",
+        "full_name": "Harold/TheMachine",
+        "installation_id": 10,
+        "owner": "Harold",
+        "owner_id": 7
+      }
+    }
+  },
+  "Arthur": {
+    "repos": {
+      "Samaritan": {
+        "id": 666,
+        "name": "Samaritan",
+        "full_name": "Arthur/Samaritan",
+        "installation_id": 11,
+        "owner": "Arthur",
+        "owner_id": 13
+      }
+    }
+  }
+}
+`;

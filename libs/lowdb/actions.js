@@ -85,7 +85,7 @@ const fetchInstallationIdFromCache = async ({ username, repository }) => {
 }
 
 const addRepoToCache = async repo => {
-  logger.info('Adding repository to lowdb Cache')
+  logger.verbose('Adding repository to lowdb Cache')
 
   try {
     let cache = await getReposCache(repo.owner)

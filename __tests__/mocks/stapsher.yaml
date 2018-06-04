@@ -1,0 +1,16 @@
+comment:
+  allowedFields: ["author","comment","email","site"]
+  branch: master
+  commitMessage: "add new comment by {fields.author} <Stapsher>"
+  filename: "{_date~unix}.{_id}"
+  format: yaml
+  generatedFields:
+    timestamp:
+      type: date
+      options:
+        format: unix
+  moderation: false
+  path: "data/comments"
+  requiredFields: ["author","comment","email"]
+  transforms:
+    email: "hash~md5"

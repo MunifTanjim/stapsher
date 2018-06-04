@@ -12,7 +12,7 @@ const logger = winston.createLogger()
 
 logger.add(
   new winston.transports.Console({
-    level: ['development', 'test'].includes(env) ? 'silly' : 'info',
+    level: ['development'].includes(env) ? 'silly' : 'info',
     format: winston.format.combine(
       winston.format.timestamp({ format: 'YYYYMMDDHHmmss' }),
       winston.format.colorize(),

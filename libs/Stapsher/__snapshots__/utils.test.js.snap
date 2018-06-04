@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Stapsher:utils generatePullRequestBody works as expected 1`] = `
+"PullRequest
+| Field | Value |
+| ----- | ----- |
+| name  | John  |"
+`;
+
+exports[`Stapsher:utils getContentDump returns dump for format 1`] = `
+"{
+  \\"name\\": \\"John\\"
+}"
+`;
+
+exports[`Stapsher:utils getContentDump returns dump for format 2`] = `
+"name: John
+"
+`;
