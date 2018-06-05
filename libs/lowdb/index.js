@@ -42,7 +42,7 @@ const getUsersCache = async () => {
 const getReposCache = async username => {
   try {
     if (!username) {
-      throwError('[getReposCache] username required', { username }, 500, true)
+      throw new Error('[getReposCache] username required')
     }
 
     let usersCache = await getUsersCache()

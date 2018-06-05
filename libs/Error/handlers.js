@@ -1,5 +1,5 @@
 const logger = require('../Logger')
-const { throwError } = require('../Error')
+const { StapsherError, throwError } = require('../Error')
 
 const config = require('../../configs/server')
 
@@ -20,16 +20,21 @@ const errorLogHandler = (err, req, res, next) => {
 }
 
 const errorResponseHandler = (err, req, res, next) => {
-  let { message, cause, statusCode = 500, mask, redirect } = err
+  let error =
+    err instanceof StapsherError
+      ? err
+      : new StapsherError('SERVER_PROBLEM', err, 500, true)
+
+  let { message, cause, statusCode, redirect } = error
 
   if (redirect) res.redirect(redirect)
   else
     res.status(statusCode).send({
-      code: mask ? 'SERVER_PROBLEM' : message,
+      code: message,
       info: cause instanceof Error ? cause.toString() : cause
     })
 
-  next(err)
+  next(error)
 }
 
 const gracefulShutdownHandler = server => {

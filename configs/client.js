@@ -2,6 +2,8 @@ const convict = require('convict')
 
 const { decrypt } = require('../libs/Crypto')
 
+const { throwError } = require('../libs/Error')
+
 const configSchema = {
   akismet: {
     enable: {
@@ -144,7 +146,11 @@ const loadConfig = data => {
 
     return config
   } catch (err) {
-    throw err
+    let error = /\n/.test(err.message)
+      ? { errors: err.message.split('\n') }
+      : err
+
+    throwError('CONFIG_ERROR', error, 400)
   }
 }
 
