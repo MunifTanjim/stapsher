@@ -4,13 +4,13 @@ const asyncHandler = require('express-async-handler')
 const { encrypt } = require('../../libs/Crypto')
 
 router.get(
-  '/:text',
+  '/:string',
   asyncHandler(async (req, res, next) => {
     try {
-      let { text } = req.params
-      let encryptedText = encrypt(text)
+      let { string } = req.params
+      let encryptedString = encrypt(string)
 
-      res.send(encryptedText)
+      res.type('txt').send(encryptedString)
     } catch (err) {
       throw err
     }
