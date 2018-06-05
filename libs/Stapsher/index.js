@@ -1,5 +1,4 @@
 const _ = require('lodash')
-const yaml = require('js-yaml')
 const uuidv1 = require('uuid/v1')
 const recaptcha = require('recaptcha-validator')
 
@@ -16,7 +15,9 @@ const {
   getFormatExtension,
   trimObjectStringEntries,
   generatePullRequestBody,
-  GetPlatformConstructor
+  GetPlatformConstructor,
+  validateConfig,
+  validateFields
 } = require('./utils')
 
 class Stapsher {
@@ -71,13 +72,9 @@ class Stapsher {
         return this.config
       }
 
-      let blob = await this.platform.readFile(this.configPath)
+      let configData = await this.platform.readFile(this.configPath)
 
-      let data = yaml.safeLoad(blob, 'utf8')
-
-      let config = data[this.entryType]
-
-      await this._validateConfig(config)
+      let config = await this._validateConfig(configData)
 
       if (config.branch !== this.info.branch) {
         throwError(
@@ -93,53 +90,12 @@ class Stapsher {
     }
   }
 
-  async _validateConfig(config) {
-    try {
-      if (!config) {
-        throwError('MISSING_CONFIG_BLOCK', { entryType: this.entryType }, 400)
-      }
-
-      let requiredOptions = ['allowedFields', 'branch', 'format', 'path']
-
-      let missingOptions = requiredOptions.filter(option =>
-        _.isUndefined(config[option])
-      )
-
-      if (missingOptions.length) {
-        throwError('MISSING_CONFIG_OPTIONS', { options: missingOptions }, 400)
-      }
-
-      return true
-    } catch (err) {
-      throw err
-    }
+  async _validateConfig(configData) {
+    return validateConfig(configData, this)
   }
 
   async _validateFields(fields) {
-    try {
-      let requiredFields = this.config.get('requiredFields')
-
-      let missingRequiredFields = requiredFields.filter(
-        field => _.isUndefined(fields[field]) || fields[field] === ''
-      )
-
-      if (missingRequiredFields.length) {
-        throwError('MISSING_REQUIRED_FIELDS', { missingRequiredFields }, 400)
-      }
-
-      let allowedFields = this.config.get('allowedFields')
-      let notAllowedFields = Object.keys(fields).filter(
-        field => !allowedFields.includes(field) && fields[field] !== ''
-      )
-
-      if (notAllowedFields.length) {
-        throwError('FIELDS_NOT_ALLOWED', { notAllowedFields }, 400)
-      }
-
-      return true
-    } catch (err) {
-      throw err
-    }
+    return validateFields(fields, this)
   }
 
   async _applyGeneratedFields() {
@@ -288,14 +244,18 @@ class Stapsher {
         referrer: this.extraInfo.clientReferrer,
         permalink: '',
         comment_type: this.config.get('akismet.type'),
-        comment_author: this.fields[this.config.get('akismet.fields.author')],
-        comment_author_email: this.fields[
+        comment_author: this.rawFields[
+          this.config.get('akismet.fields.author')
+        ],
+        comment_author_email: this.rawFields[
           this.config.get('akismet.fields.authorEmail')
         ],
-        comment_author_url: this.fields[
+        comment_author_url: this.rawFields[
           this.config.get('akismet.fields.authorUrl')
         ],
-        comment_content: this.fields[this.config.get('akismet.fields.content')]
+        comment_content: this.rawFields[
+          this.config.get('akismet.fields.content')
+        ]
       }
 
       let spam = await akismetCheckSpam(
@@ -325,9 +285,9 @@ class Stapsher {
 
       await this._throwSpam()
 
-      await this._validateFields(fields)
+      fields = trimObjectStringEntries(fields)
 
-      this.fields = trimObjectStringEntries(fields)
+      this.fields = await this._validateFields(fields)
 
       await this._applyGeneratedFields()
       await this._applyTransforms()

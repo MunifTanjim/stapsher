@@ -23,22 +23,22 @@ const configSchema = {
       author: {
         doc: "Field name for the entry Author's Name",
         format: String,
-        default: ''
+        default: 'author'
       },
       authorEmail: {
         doc: "Field name for the entry Author's Email",
         format: String,
-        default: ''
+        default: 'email'
       },
       authorUrl: {
         doc: "Field name for the entry Author's URL",
         format: String,
-        default: ''
+        default: 'url'
       },
       content: {
         doc: 'Field name for the entry Content',
         format: String,
-        default: ''
+        default: 'content'
       }
     },
     type: {

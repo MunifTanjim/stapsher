@@ -58,6 +58,8 @@ const GetPlatformConstructor = platform => {
       return GitHub
     case 'gitlab':
       return GitLab
+    default:
+      throwError('UNSUPPORTED_PLATFORM', { platform }, 400)
   }
 }
 
@@ -99,6 +101,58 @@ const trimObjectStringEntries = object => {
   return newObject
 }
 
+const validateConfig = async (configData, { entryType }) => {
+  try {
+    let config = configData[entryType]
+
+    if (!config) {
+      throwError('MISSING_CONFIG_BLOCK', { entryType }, 400)
+    }
+
+    let requiredOptions = ['allowedFields', 'branch', 'format', 'path']
+
+    let missingOptions = requiredOptions.filter(option =>
+      _.isUndefined(config[option])
+    )
+
+    if (missingOptions.length) {
+      throwError('MISSING_CONFIG_OPTIONS', { options: missingOptions }, 400)
+    }
+
+    return config
+  } catch (err) {
+    throw err
+  }
+}
+
+const validateFields = async (fields, { config }) => {
+  try {
+    let requiredFields = config.get('requiredFields')
+
+    let missingRequiredFields = requiredFields.filter(
+      field => _.isUndefined(fields[field]) || fields[field] === ''
+    )
+
+    if (missingRequiredFields.length) {
+      throwError('MISSING_REQUIRED_FIELDS', { missingRequiredFields }, 400)
+    }
+
+    let allowedFields = config.get('allowedFields')
+
+    let notAllowedFields = Object.keys(fields).filter(
+      field => !allowedFields.includes(field) && fields[field] !== ''
+    )
+
+    if (notAllowedFields.length) {
+      throwError('FIELDS_NOT_ALLOWED', { notAllowedFields }, 400)
+    }
+
+    return fields
+  } catch (err) {
+    throw err
+  }
+}
+
 module.exports = {
   generatePullRequestBody,
   getContentDump,
@@ -106,5 +160,7 @@ module.exports = {
   GetPlatformConstructor,
   formatDate,
   resolvePlaceholder,
-  trimObjectStringEntries
+  trimObjectStringEntries,
+  validateConfig,
+  validateFields
 }
