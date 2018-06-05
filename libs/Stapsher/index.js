@@ -40,7 +40,7 @@ class Stapsher {
 
     this.extraInfo = {}
 
-    this.platform = new GetPlatformConstructor(platform)(
+    this.platform = new (GetPlatformConstructor(platform))(
       this.info,
       platformBaseUrl
     )
