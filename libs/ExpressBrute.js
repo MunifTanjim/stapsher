@@ -9,14 +9,15 @@ const httpCodes = require('./Error/httpcodes')
 const config = require('../configs/server')
 
 const store = new LowdbStore({
-  adapter: ['development', 'test'].includes(config.get('env'))
-    ? Memory
-    : FileSync,
+  adapter: ['test'].includes(config.get('env')) ? Memory : FileSync,
   adapterArgs: ['cache/brute.json'],
   rootKey: 'brute'
 })
 
 const bruteforce = new ExpressBrute(store, {
+  minWait: 5 * 1000,
+  maxWait: 60 * 1000,
+  lifetime: 60,
   handleStoreError: bruteStoreErrorHandler
 })
 
@@ -31,7 +32,7 @@ const failCallbackHandler = (req, res, next, nextValidRequestDate) => {
     code: httpCodes[429],
     info: {
       message: `Too many requests received in a short amount of time! Retry after ${secondsUntilNextRequest} seconds.`,
-      retryAfter: secondsUntilNextRequest
+      retryAfter: secondsUntilNextRequest * 1000
     }
   })
 }
