@@ -1,3 +1,5 @@
+const { addSnapshotSerializers } = require('../../../__tests__/helpers')
+
 const {
   generatePullRequestBody,
   getContentDump,
@@ -5,13 +7,17 @@ const {
   GetPlatformConstructor,
   formatDate,
   resolvePlaceholder,
-  trimObjectStringEntries
-} = require('./utils')
+  trimObjectStringEntries,
+  validateConfig,
+  validateFields
+} = require('../utils')
 
 const dateFormat = require('dateformat')
 
-const GitHub = require('../GitHub')
-const GitLab = require('../GitLab')
+const GitHub = require('../../GitHub')
+const GitLab = require('../../GitLab')
+
+addSnapshotSerializers()
 
 describe('Stapsher:utils', () => {
   describe('generatePullRequestBody', () => {
@@ -150,6 +156,80 @@ describe('Stapsher:utils', () => {
       expect(
         trimObjectStringEntries({ ...object, status: [' Primary Asset '] })
       ).toEqual({ ...trimmedObject, status: [' Primary Asset '] })
+    })
+  })
+
+  describe('validateConfig', () => {
+    let configData, entryType
+
+    beforeEach(() => {
+      configData = {
+        comment: { allowedFields: [], branch: '', format: '', path: '' }
+      }
+      entryType = 'comment'
+    })
+
+    it('detects missing config block', () => {
+      entryType = 'message'
+      return expect(validateConfig(configData, { entryType })).rejects.toThrow()
+    })
+
+    it('detects missing required options', () => {
+      delete configData.allowedFields
+      return expect(
+        validateConfig(
+          { comment: { branch: '', format: '', path: '' } },
+          { entryType }
+        )
+      ).rejects.toThrow()
+    })
+
+    it('resolves with valid config', () => {
+      return expect(validateConfig(configData, { entryType })).resolves.toEqual(
+        configData[entryType]
+      )
+    })
+  })
+
+  describe('validateFields', () => {
+    let mockConfigMap = {
+      requiredFields: ['author', 'comment', 'email'],
+      allowedFields: ['author', 'comment', 'email', 'site']
+    }
+
+    let config = {
+      get: key => mockConfigMap[key]
+    }
+
+    let fields
+
+    beforeEach(() => {
+      fields = {
+        author: 'Author',
+        comment: 'Comment',
+        email: 'author@example.com',
+        site: 'https://author.example.com'
+      }
+    })
+
+    it('throws if missing required fields', async () => {
+      delete fields.email
+
+      await validateFields(fields, { config }).catch(err => {
+        expect(err).toMatchSnapshot()
+      })
+    })
+
+    it('throws if fields not allowed', async () => {
+      fields = { ...fields, rogue: true }
+
+      await validateFields(fields, { config }).catch(err => {
+        expect(err).toMatchSnapshot()
+      })
+    })
+
+    it('resolves with valid fields', async () => {
+      expect(await validateFields(fields, { config })).toEqual(fields)
     })
   })
 })

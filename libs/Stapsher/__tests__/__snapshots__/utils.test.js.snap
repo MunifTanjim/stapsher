@@ -17,3 +17,25 @@ exports[`Stapsher:utils getContentDump returns dump for format 2`] = `
 "name: John
 "
 `;
+
+exports[`Stapsher:utils validateFields throws if fields not allowed 1`] = `
+{
+  "code": "FIELDS_NOT_ALLOWED",
+  "cause": {
+    "notAllowedFields": [
+      "rogue"
+    ]
+  }
+}
+`;
+
+exports[`Stapsher:utils validateFields throws if missing required fields 1`] = `
+{
+  "code": "MISSING_REQUIRED_FIELDS",
+  "cause": {
+    "missingRequiredFields": [
+      "email"
+    ]
+  }
+}
+`;

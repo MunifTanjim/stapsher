@@ -8,7 +8,9 @@ const env = config.get('env')
 
 const logDirectory = path.resolve('logs/activities')
 
-const logger = winston.createLogger()
+const logger = winston.createLogger({
+  silent: env === 'test'
+})
 
 logger.add(
   new winston.transports.Console({
