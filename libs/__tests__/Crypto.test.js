@@ -1,4 +1,4 @@
-const { encrypt, decrypt, hash } = require('./Crypto')
+const { encrypt, decrypt, hash } = require('../Crypto')
 
 const string = 'stapsher'
 

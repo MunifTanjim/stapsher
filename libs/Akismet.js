@@ -4,7 +4,8 @@ const { throwError } = require('../libs/Error')
 
 const akismetCheckSpam = async (key, blog, entryObject) => {
   try {
-    return akismet.client({ key, blog }).checkSpam(entryObject)
+    let spam = await akismet.client({ key, blog }).checkSpam(entryObject)
+    return spam
   } catch (err) {
     throwError('AKISMET_CHECK_SPAM_FAILED', err, 500)
   }
@@ -12,7 +13,8 @@ const akismetCheckSpam = async (key, blog, entryObject) => {
 
 const akismetVerify = async (key, blog) => {
   try {
-    return akismet.client({ key, blog }).verifyKey()
+    let valid = await akismet.client({ key, blog }).verifyKey()
+    return valid
   } catch (err) {
     throwError('AKISMET_VERIFICATION_FAILED', err, 500)
   }
