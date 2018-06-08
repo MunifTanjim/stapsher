@@ -5,22 +5,16 @@ const helpers = require('../helpers')
 
 const app = require('../../app')
 
-let server
+beforeAll(done => helpers.startServer(done, app))
+afterAll(done => helpers.stopServer(done, app))
 
-beforeAll(done => {
-  server = helpers.startServer(done, app)
-})
-
-afterAll(done => {
-  helpers.stopServer(done, server)
-})
-
-describe('Stapsher:routes:encrypt', () => {
-  let baseUrl = helpers.getBaseUrl()
+describe('Stapsher:integration:encrypt', () => {
+  let string = 'Ernest Thornhill'
+  let endpoint = `/encrypt/${string}`
 
   it('endpoint /encrypt/{string}', async () => {
-    let string = 'Ernest Thornhill'
-    let res = await fetch(`${baseUrl}/encrypt/${string}`)
+    let res = await fetch(`${app.get('baseUrl')}${endpoint}`)
+
     expect(res.headers.get('content-type')).toMatch(/text\/plain/)
     expect(await res.text()).not.toBe(string)
   })

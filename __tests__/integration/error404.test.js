@@ -5,21 +5,14 @@ const helpers = require('../helpers')
 
 const app = require('../../app')
 
-let server
-
-beforeAll(done => {
-  server = helpers.startServer(done, app)
-})
-
-afterAll(done => {
-  helpers.stopServer(done, server)
-})
+beforeAll(done => helpers.startServer(done, app))
+afterAll(done => helpers.stopServer(done, app))
 
 describe('Stapsher:routes:error404', () => {
-  let baseUrl = helpers.getBaseUrl()
+  let endpoint = '/non-existent-path'
 
   it('responds correctly for 404 error', async () => {
-    let res = await fetch(`${baseUrl}/non-existent-path`)
+    let res = await fetch(`${app.get('baseUrl')}${endpoint}`)
     expect(res.status).toBe(404)
     expect(res.headers.get('content-type')).toMatch(/application\/json/)
     expect(await res.json()).toMatchSnapshot()

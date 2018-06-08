@@ -1,11 +1,13 @@
-const config = require('../../configs/server')
+const getPort = require('get-port')
 
 module.exports.startServer = (done, app) => {
-  let server = app.listen(config.get('port'))
-  server.on('listening', () => done())
-  return server
+  getPort().then(port => {
+    app.set('baseUrl', `http://localhost:${port}`)
+    app.stapsher = app.listen(port)
+    app.stapsher.on('listening', done)
+  })
 }
 
-module.exports.stopServer = (done, server) => {
-  server.close(() => done())
+module.exports.stopServer = (done, app) => {
+  app.stapsher.close(done)
 }

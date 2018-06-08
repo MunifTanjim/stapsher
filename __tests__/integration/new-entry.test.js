@@ -9,24 +9,18 @@ const Stapsher = require('../../libs/Stapsher')
 
 const app = require('../../app')
 
-let server
-beforeAll(done => {
-  server = helpers.startServer(done, app)
-})
-afterAll(done => {
-  helpers.stopServer(done, server)
-})
+beforeAll(done => helpers.startServer(done, app))
+afterAll(done => helpers.stopServer(done, app))
 
 beforeEach(() => {
   Stapsher.mockClear()
 })
 
 describe('Stapsher:integration:new-entry', () => {
-  let baseUrl = helpers.getBaseUrl()
   let parameters = helpers.getParameters()
 
   let { platform, username, repository, branch, entryType } = parameters
-  let url = `${baseUrl}/${platform}/${username}/${repository}/${branch}/${entryType}/new`
+  let endpoint = `/${platform}/${username}/${repository}/${branch}/${entryType}/new`
 
   let body = {
     'g-recaptcha-response': 'qwerty',
@@ -42,7 +36,7 @@ describe('Stapsher:integration:new-entry', () => {
   }
 
   it('calls necessary functions', async () => {
-    await fetch(url, {
+    await fetch(`${app.get('baseUrl')}${endpoint}`, {
       method: 'POST',
       body: qs.stringify(body),
       headers: { ...headers }

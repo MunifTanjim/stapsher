@@ -1,7 +1,3 @@
-const config = require('../../configs/server')
-
-module.exports.baseUrl = `http://localhost:${config.get('port')}`
-
 module.exports.parameters = {
   version: 'v1',
   platform: 'github',
