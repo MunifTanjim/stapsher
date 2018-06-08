@@ -11,6 +11,12 @@ const baseUrlMap = {
   gitlab: 'gitlab.com'
 }
 
+// prevents persistent connections
+router.use((req, res, next) => {
+  res.set('connection', 'close')
+  next()
+})
+
 router.param('platform', (req, res, next, platform) => {
   let url = req.query.baseurl || baseUrlMap[platform]
 
