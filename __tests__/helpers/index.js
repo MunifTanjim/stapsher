@@ -1,42 +1,17 @@
-const path = require('path')
+module.exports.addSnapshotSerializers = require('./jest').addSnapshotSerializers
 
-const config = require('../../configs/server')
+module.exports.disableRequestLogger = require('./disablers').disableRequestLogger
+module.exports.disableExpressBrute = require('./disablers').disableExpressBrute
 
-module.exports.disableRequestLogger = () => {
-  jest.mock(path.resolve('libs/Logger/request'), () => () => (req, res, next) =>
-    next()
-  )
-}
+module.exports.startServer = require('./server').startServer
+module.exports.stopServer = require('./server').stopServer
 
-module.exports.disableExpressBrute = () => {
-  jest.mock(path.resolve('libs/ExpressBrute'), () => ({
-    bruteMiddleware: () => (req, res, next) => next()
-  }))
-}
+module.exports.mockDate = require('./mocks').mockDate
+module.exports.mockUUIDv1 = require('./mocks').mockUUIDv1
 
-module.exports.startServer = (done, app) => {
-  let server = app.listen(config.get('port'))
-  server.on('listening', () => done())
-  return server
-}
+module.exports.getBaseUrl = () => require('./info').baseUrl
+module.exports.getParameters = () => require('./info').parameters
+module.exports.getFields = () => require('./info').fields
+module.exports.getOptions = () => require('./info').options
 
-module.exports.stopServer = (done, server) => {
-  server.close(() => done())
-}
-
-const serializers = {
-  errorSerializer: {
-    print: o => JSON.stringify(o, null, 2),
-    test: o => o && typeof o === 'object'
-  },
-  objectSerializer: {
-    print: o => JSON.stringify(o.toJSON ? o.toJSON() : o, null, 2),
-    test: o => o && o instanceof Error
-  }
-}
-
-module.exports.addSnapshotSerializers = () => {
-  Object.values(serializers).forEach(serializer =>
-    expect.addSnapshotSerializer(serializer)
-  )
-}
+module.exports.readConfigFile = require('./config').readConfigFile

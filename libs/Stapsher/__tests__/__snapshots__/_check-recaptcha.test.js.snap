@@ -1,0 +1,8 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`libs/Stapsher:__checkRecaptcha throws error if recaptcha is invalid 1`] = `
+{
+  "code": "RECAPTCHA_ERROR",
+  "cause": "test"
+}
+`;

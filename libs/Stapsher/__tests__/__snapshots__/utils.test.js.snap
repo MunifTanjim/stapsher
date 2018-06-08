@@ -1,5 +1,45 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Stapsher:utils GetPlatformConstructor throws error if unsupported platform 1`] = `
+{
+  "code": "UNSUPPORTED_PLATFORM",
+  "cause": {
+    "platform": "facebook"
+  }
+}
+`;
+
+exports[`Stapsher:utils applyGeneratedFields generates new fields 1`] = `
+{
+  "name": "Harold",
+  "role": "admin",
+  "timestamp": 0
+}
+`;
+
+exports[`Stapsher:utils applyInternalFields adds internal fields 1`] = `
+{
+  "name": "Harold",
+  "_id": "7w0.z3r0.7w0.53v3n"
+}
+`;
+
+exports[`Stapsher:utils applyTransforms throws error if hash algorithm is missing 1`] = `
+{
+  "code": "MISSING_HASH_ALGORITHM",
+  "cause": {
+    "field": "name",
+    "transform": "hash"
+  }
+}
+`;
+
+exports[`Stapsher:utils applyTransforms transforms fields 1`] = `
+{
+  "name": "52e10d8b23b93b7467296125130aafa7"
+}
+`;
+
 exports[`Stapsher:utils generatePullRequestBody works as expected 1`] = `
 "PullRequest
 | Field | Value |
@@ -17,6 +57,19 @@ exports[`Stapsher:utils getContentDump returns dump for format 2`] = `
 "name: John
 "
 `;
+
+exports[`Stapsher:utils getFormatExtension throws error if unsupported format 1`] = `
+{
+  "code": "UNSUPPORTED_FORMAT",
+  "cause": {
+    "format": "snap"
+  }
+}
+`;
+
+exports[`Stapsher:utils getNewFilePath uses extension 1`] = `"/test/path/data.comment.yml"`;
+
+exports[`Stapsher:utils getNewFilePath uses format to get fallback extension 1`] = `"/test/path/data.yaml"`;
 
 exports[`Stapsher:utils validateFields throws if fields not allowed 1`] = `
 {

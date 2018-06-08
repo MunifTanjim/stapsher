@@ -19,7 +19,7 @@ const configSchema = {
     siteUrl: {
       doc: 'Site URL form the Akismet account',
       format: String,
-      default: null
+      default: ''
     },
     fields: {
       author: {
@@ -133,7 +133,7 @@ const configSchema = {
 
 convict.addFormat({
   name: 'EncryptedString',
-  validate: Boolean,
+  validate: () => true,
   coerce: decrypt
 })
 
@@ -154,7 +154,5 @@ const loadConfig = data => {
   }
 }
 
-module.exports = {
-  configSchema,
-  loadConfig
-}
+module.exports.configSchema = configSchema
+module.exports.loadConfig = loadConfig

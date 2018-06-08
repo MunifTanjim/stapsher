@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`libs/Stapsher:__throwSpam calls necessary functions 1`] = `
+[
+  "zxcvb",
+  "https://example.com",
+  {
+    "user_ip": "127.0.0.1",
+    "user_agent": "TheMachine/1.0",
+    "referrer": "r007",
+    "permalink": "",
+    "comment_type": "comment",
+    "comment_author": "Samantha Groves",
+    "comment_author_email": "samantha@example.com",
+    "comment_author_url": "https://samantha.example.com",
+    "comment_content": "We might as well be a symphony"
+  }
+]
+`;
+
+exports[`libs/Stapsher:__throwSpam throws error if spam is true 1`] = `
+{
+  "code": "AKISMET_IS_SPAM",
+  "cause": {
+    "entryObject": {
+      "user_ip": "127.0.0.1",
+      "user_agent": "TheMachine/1.0",
+      "referrer": "r007",
+      "permalink": "",
+      "comment_type": "comment",
+      "comment_author": "Samantha Groves",
+      "comment_author_email": "samantha@example.com",
+      "comment_author_url": "https://samantha.example.com",
+      "comment_content": "We might as well be a symphony"
+    }
+  }
+}
+`;

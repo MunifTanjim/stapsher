@@ -1,18 +1,19 @@
-const _ = require('lodash')
+const deepsort = require('deep-sort-object')
 const uuidv1 = require('uuid/v1')
 const recaptcha = require('recaptcha-validator')
 
-const { hash } = require('../Crypto')
 const { throwError } = require('../Error')
 const { akismetCheckSpam } = require('../Akismet')
 
 const { loadConfig } = require('../../configs/client')
 
 const {
-  formatDate,
+  applyGeneratedFields,
+  applyInternalFields,
+  applyTransforms,
   getContentDump,
-  resolvePlaceholder,
-  getFormatExtension,
+  resolvePlaceholders,
+  getNewFilePath,
   trimObjectStringEntries,
   generatePullRequestBody,
   GetPlatformConstructor,
@@ -52,6 +53,8 @@ class Stapsher {
     this.rawFields = null
     this.fields = null
     this.options = null
+
+    this.dictionary = null
   }
 
   async authenticate() {
@@ -66,20 +69,16 @@ class Stapsher {
     this.extraInfo = { ...this.extraInfo, ...infoObject }
   }
 
-  async getConfig(force = false) {
+  async getConfig() {
     try {
-      if (this.config && !force) {
-        return this.config
-      }
-
       let configData = await this.platform.readFile(this.configPath)
 
-      let config = await this._validateConfig(configData)
+      let config = validateConfig(configData, this.entryType)
 
       if (config.branch !== this.info.branch) {
         throwError(
           'BRANCH_MISMATCH',
-          { api: this.info.branch, config: config.branch },
+          { branch: { url: this.info.branch, config: config.branch } },
           422
         )
       }
@@ -90,153 +89,81 @@ class Stapsher {
     }
   }
 
-  async _validateConfig(configData) {
-    return validateConfig(configData, this)
+  __validateFields(fields) {
+    let allowedFields = this.config.get('allowedFields')
+    let requiredFields = this.config.get('requiredFields')
+
+    return validateFields(fields, allowedFields, requiredFields)
   }
 
-  async _validateFields(fields) {
-    return validateFields(fields, this)
+  __applyGeneratedFields() {
+    let generatedFields = this.config.get('generatedFields')
+    this.fields = applyGeneratedFields(this.fields, generatedFields, {
+      date: this._date
+    })
   }
 
-  async _applyGeneratedFields() {
+  __applyTransforms() {
+    let transformBlocks = this.config.get('transforms')
+    this.fields = applyTransforms(this.fields, transformBlocks)
+  }
+
+  __applyInternalFields() {
+    let internalFields = { _id: this._id }
+    this.fields = applyInternalFields(this.fields, internalFields)
+  }
+
+  __getNewFileContent() {
+    let dataObject = this.fields
+    let format = this.config.get('format')
+    return getContentDump(dataObject, format)
+  }
+
+  __getNewFilePath() {
+    let path = this.__resolvePlaceholders(this.config.get('path'))
+    let filename = this.__resolvePlaceholders(this.config.get('filename'))
+    let extension = this.config.get('extension')
+    let format = this.config.get('format')
+
+    return getNewFilePath(path, filename, extension, format)
+  }
+
+  __resolvePlaceholders(string) {
     try {
-      let generatedFields = this.config.get('generatedFields')
-
-      if (!generatedFields) return true
-
-      for (let [name, field] of Object.entries(generatedFields)) {
-        if (_.isObject(field) && !_.isArray(field)) {
-          let { options = {}, type } = field
-
-          switch (type) {
-            case 'date':
-              this.fields[name] = formatDate(this._date, options.format)
-              break
-          }
-        } else {
-          this.fields[name] = field
+      if (!this.dictionary) {
+        this.dictionary = {
+          _id: this._id,
+          _date: this._date,
+          fields: this.fields,
+          options: this.options
         }
       }
 
-      return true
+      return resolvePlaceholders(string, this.dictionary)
     } catch (err) {
       throw err
     }
   }
 
-  async _applyTransforms() {
+  async __checkRecaptcha() {
     try {
-      let transformBlocks = this.config.get('transforms')
-
-      if (!transformBlocks) return true
-
-      for (let [field, transforms] of Object.entries(transformBlocks)) {
-        if (!this.fields[field]) continue
-
-        transforms = Array.isArray(transforms) ? transforms : [transforms]
-
-        transforms.forEach(transform => {
-          if (transform.includes('hash')) {
-            let algorithm = transform.split('~')[1] // 0: action
-
-            if (!algorithm) {
-              throwError('MISSING_HASH_ALGORITHM', { field, transform }, 422)
-            }
-
-            this.fields[field] = hash(this.fields[field], algorithm)
-          }
-        })
-      }
-
-      return true
-    } catch (err) {
-      throw err
-    }
-  }
-
-  async _applyInternalFields() {
-    try {
-      let internalFields = { _id: this._id }
-
-      this.fields = { ...internalFields, ...this.fields }
-
-      return true
-    } catch (err) {
-      throw err
-    }
-  }
-
-  _getNewFileContent() {
-    try {
-      let format = this.config.get('format')
-
-      return getContentDump(this.fields, format)
-    } catch (err) {
-      throw err
-    }
-  }
-
-  _getNewFilePath() {
-    try {
-      let path = this._resolvePlaceholders(this.config.get('path'))
-      if (path.slice(-1) === '/') path = path.slice(0, -1)
-
-      let format = this.config.get('format')
-
-      let customFilename = this.config.get('filename')
-      let filename = customFilename.length
-        ? this._resolvePlaceholders(customFilename)
-        : this._id
-
-      let customExtension = this.config.get('extension')
-      let extension = customExtension.length
-        ? customExtension
-        : getFormatExtension(format)
-
-      return `${path}/${filename}.${extension}`
-    } catch (err) {
-      throw err
-    }
-  }
-
-  _resolvePlaceholders(string) {
-    try {
-      let dictionary = {
-        _id: this._id,
-        _date: this._date,
-        fields: this.fields,
-        options: this.options
-      }
-
-      let resolvedString = string.replace(/{(.*?)}/g, (placeholder, property) =>
-        resolvePlaceholder(property, dictionary)
-      )
-
-      return resolvedString
-    } catch (err) {
-      throw err
-    }
-  }
-
-  async _checkRecaptcha() {
-    try {
-      if (!this.config.get('recaptcha.enable')) return true
+      if (!this.config.get('recaptcha.enable')) return
 
       await recaptcha(
         this.config.get('recaptcha.secretKey'),
         this.extraInfo.recaptchaResponse,
         this.extraInfo.clientIP
       )
-
-      return true
     } catch (err) {
       throwError('RECAPTCHA_ERROR', err, 400)
     }
   }
 
-  async _throwSpam() {
+  async __throwSpam() {
     try {
-      if (!this.config.get('akismet.enable')) return true
+      if (!this.config.get('akismet.enable')) return
+
+      let fields = this.rawFields
 
       let entryObject = {
         user_ip: this.extraInfo.clientIP,
@@ -244,18 +171,11 @@ class Stapsher {
         referrer: this.extraInfo.clientReferrer,
         permalink: '',
         comment_type: this.config.get('akismet.type'),
-        comment_author: this.rawFields[
-          this.config.get('akismet.fields.author')
-        ],
-        comment_author_email: this.rawFields[
-          this.config.get('akismet.fields.authorEmail')
-        ],
-        comment_author_url: this.rawFields[
-          this.config.get('akismet.fields.authorUrl')
-        ],
-        comment_content: this.rawFields[
-          this.config.get('akismet.fields.content')
-        ]
+        comment_author: fields[this.config.get('akismet.fields.author')],
+        comment_author_email:
+          fields[this.config.get('akismet.fields.authorEmail')],
+        comment_author_url: fields[this.config.get('akismet.fields.authorUrl')],
+        comment_content: fields[this.config.get('akismet.fields.content')]
       }
 
       let spam = await akismetCheckSpam(
@@ -267,35 +187,33 @@ class Stapsher {
       if (spam) {
         throwError('AKISMET_IS_SPAM', { entryObject }, 400)
       }
-
-      return true
     } catch (err) {
       throw err
     }
   }
 
-  async processNewEntry(fields, options) {
+  async processNewEntry(fields = {}, options = {}) {
     try {
       this.rawFields = { ...fields }
       this.options = { ...options }
 
       this.config = await this.getConfig()
 
-      await this._checkRecaptcha()
-
-      await this._throwSpam()
+      await this.__checkRecaptcha()
+      await this.__throwSpam()
 
       fields = trimObjectStringEntries(fields)
+      this.fields = this.__validateFields(fields)
 
-      this.fields = await this._validateFields(fields)
+      this.__applyGeneratedFields()
+      this.__applyTransforms()
+      this.__applyInternalFields()
 
-      await this._applyGeneratedFields()
-      await this._applyTransforms()
-      await this._applyInternalFields()
+      this.fields = deepsort(this.fields)
 
-      let content = this._getNewFileContent()
-      let path = this._getNewFilePath()
-      let commitMessage = this._resolvePlaceholders(
+      let content = this.__getNewFileContent()
+      let path = this.__getNewFilePath()
+      let commitMessage = this.__resolvePlaceholders(
         this.config.get('commitMessage')
       )
 

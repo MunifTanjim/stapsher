@@ -28,7 +28,7 @@ app.use(requestLogger())
 
 app.use(bruteMiddleware())
 
-if (!['development', 'test'].includes(config.get('env'))) {
+if (!['development'].includes(config.get('env'))) {
   app.set('trust proxy', 1)
 }
 

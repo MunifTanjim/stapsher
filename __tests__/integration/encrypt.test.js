@@ -1,28 +1,26 @@
-require('./helpers/init')
-
-const { startServer, stopServer } = require('../helpers')
-
 const fetch = require('node-fetch')
 
-const config = require('../../configs/server')
+require('./helpers/init')
+const helpers = require('../helpers')
+
 const app = require('../../app')
 
 let server
 
 beforeAll(done => {
-  server = startServer(done, app)
+  server = helpers.startServer(done, app)
 })
 
 afterAll(done => {
-  stopServer(done, server)
+  helpers.stopServer(done, server)
 })
 
 describe('Stapsher:routes:encrypt', () => {
-  let port = config.get('port')
+  let baseUrl = helpers.getBaseUrl()
 
   it('endpoint /encrypt/{string}', async () => {
     let string = 'Ernest Thornhill'
-    let res = await fetch(`http://localhost:${port}/encrypt/${string}`)
+    let res = await fetch(`${baseUrl}/encrypt/${string}`)
     expect(res.headers.get('content-type')).toMatch(/text\/plain/)
     expect(await res.text()).not.toBe(string)
   })

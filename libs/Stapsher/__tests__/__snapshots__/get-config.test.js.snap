@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`libs/Stapsher:getConfig throws error if branch mismatches 1`] = `
+{
+  "code": "BRANCH_MISMATCH",
+  "cause": {
+    "branch": {
+      "url": "master",
+      "config": "dev"
+    }
+  }
+}
+`;

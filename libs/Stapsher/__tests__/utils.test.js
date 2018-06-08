@@ -1,12 +1,16 @@
 const { addSnapshotSerializers } = require('../../../__tests__/helpers')
 
 const {
+  applyGeneratedFields,
+  applyInternalFields,
+  applyTransforms,
   generatePullRequestBody,
   getContentDump,
   getFormatExtension,
+  getNewFilePath,
   GetPlatformConstructor,
   formatDate,
-  resolvePlaceholder,
+  resolvePlaceholders,
   trimObjectStringEntries,
   validateConfig,
   validateFields
@@ -20,6 +24,101 @@ const GitLab = require('../../GitLab')
 addSnapshotSerializers()
 
 describe('Stapsher:utils', () => {
+  describe('applyGeneratedFields', () => {
+    let initialFields = { name: 'Harold' }
+
+    let data = { date: new Date(0) }
+    let generatedFields = {
+      role: 'admin',
+      timestamp: {
+        type: 'date',
+        options: {
+          format: 'unix'
+        }
+      }
+    }
+
+    let fields
+    beforeEach(() => {
+      fields = { ...initialFields }
+    })
+
+    it('returns fields as-is if generatedFields is missing', () => {
+      let newFields = applyGeneratedFields(fields, null, data)
+      expect(newFields).toEqual(fields)
+    })
+
+    it('generates new fields', () => {
+      let newFields = applyGeneratedFields(fields, generatedFields, data)
+      expect(newFields).toMatchSnapshot()
+    })
+
+    it('is pure function', () => {
+      applyGeneratedFields(fields, generatedFields, data)
+      expect(fields).toEqual(initialFields)
+    })
+  })
+
+  describe('applyInternalFields', () => {
+    let initialFields = { name: 'Harold' }
+
+    let internalFields = { _id: '7w0.z3r0.7w0.53v3n' }
+
+    let fields
+    beforeEach(() => {
+      fields = { ...initialFields }
+    })
+
+    it('adds internal fields', () => {
+      let newFields = applyInternalFields(fields, internalFields)
+      expect(newFields).toMatchObject(internalFields)
+      expect(newFields).toMatchSnapshot()
+    })
+
+    it('is pure function', () => {
+      applyInternalFields(fields, internalFields)
+      expect(fields).toEqual(initialFields)
+    })
+  })
+
+  describe('applyTransforms', () => {
+    let initialFields = { name: 'Harold' }
+
+    let transformBlocks = {
+      name: 'hash~md5'
+    }
+
+    let fields
+    beforeEach(() => {
+      fields = { ...initialFields }
+    })
+
+    it('returns fields as-is if transformBlocks is missing', () => {
+      let newFields = applyTransforms(fields, null)
+      expect(newFields).toEqual(fields)
+    })
+
+    it('transforms fields', () => {
+      let newFields = applyTransforms(fields, transformBlocks)
+      expect(newFields).toMatchSnapshot()
+    })
+
+    it('is pure function', () => {
+      applyTransforms(fields, transformBlocks)
+      expect(fields).toEqual(initialFields)
+    })
+
+    it('throws error if hash algorithm is missing', () => {
+      transformBlocks.name = 'hash'
+
+      try {
+        applyTransforms(fields, transformBlocks)
+      } catch (err) {
+        expect(err).toMatchSnapshot()
+      }
+    })
+  })
+
   describe('generatePullRequestBody', () => {
     it('works as expected', () => {
       expect(
@@ -65,6 +164,37 @@ describe('Stapsher:utils', () => {
     it('supports case-insensitive format', () => {
       expect(getFormatExtension('JSON')).toBe(getFormatExtension('json'))
     })
+
+    it('throws error if unsupported format', () => {
+      try {
+        getFormatExtension('snap')
+      } catch (err) {
+        expect(err).toMatchSnapshot()
+      }
+    })
+  })
+
+  describe('getNewFilePath', () => {
+    let path = '/test/path'
+    let filename = 'data'
+    let extension = 'comment.yml'
+    let format = 'yml'
+
+    it('strips trailing slash from path', () => {
+      expect(getNewFilePath(`${path}/`, filename, extension, format)).toBe(
+        getNewFilePath(path, filename, extension, format)
+      )
+    })
+
+    it('uses extension', () => {
+      expect(
+        getNewFilePath(path, filename, extension, format)
+      ).toMatchSnapshot()
+    })
+
+    it('uses format to get fallback extension', () => {
+      expect(getNewFilePath(path, filename, '', format)).toMatchSnapshot()
+    })
   })
 
   describe('GetPlatformConstructor', () => {
@@ -79,6 +209,14 @@ describe('Stapsher:utils', () => {
       expect(GetPlatformConstructor('GITHUB')).toBe(
         GetPlatformConstructor('github')
       )
+    })
+
+    it('throws error if unsupported platform', () => {
+      try {
+        GetPlatformConstructor('facebook')
+      } catch (err) {
+        expect(err).toMatchSnapshot()
+      }
     })
   })
 
@@ -106,34 +244,33 @@ describe('Stapsher:utils', () => {
     })
   })
 
-  describe('resolvePlaceholder', () => {
+  describe('resolvePlaceholders', () => {
     let dictionary = {
       _id: '2.0.2.7',
-      _date: new Date(),
+      _date: new Date(0),
       fields: { name: 'John' },
       options: { alias: 'Wonder Boy' }
     }
 
     it('resolves _date, w and w/o format', () => {
-      expect(resolvePlaceholder('_date', dictionary)).toBe(
-        formatDate(dictionary._date, 'yyyy-mm-dd')
+      expect(resolvePlaceholders('{_date}', dictionary)).toBe(
+        String(formatDate(dictionary._date, 'yyyy-mm-dd'))
       )
 
-      expect(resolvePlaceholder('_date~unix', dictionary)).toBe(
-        formatDate(dictionary._date, 'unix')
+      expect(resolvePlaceholders('{_date~unix}', dictionary)).toBe(
+        String(formatDate(dictionary._date, 'unix'))
       )
     })
 
-    it.each([
-      ['_id', dictionary._id],
-      ['fields.name', dictionary.fields.name],
-      ['options.alias', dictionary.options.alias]
-    ])('resolves , ', (property, resolvedValue) => {
-      expect(resolvePlaceholder(property, dictionary)).toBe(resolvedValue)
+    it('resolves placeholders in string', () => {
+      let { _id, fields, options } = dictionary
+      expect(
+        resolvePlaceholders('{_id} {fields.name} {options.alias}', dictionary)
+      ).toBe(`${_id} ${fields.name} ${options.alias}`)
     })
 
     it('resolves Object to empty string', () => {
-      expect(resolvePlaceholder('fields', dictionary)).toBe('')
+      expect(resolvePlaceholders('{fields}', dictionary)).toBe('')
     })
   })
 
@@ -161,7 +298,6 @@ describe('Stapsher:utils', () => {
 
   describe('validateConfig', () => {
     let configData, entryType
-
     beforeEach(() => {
       configData = {
         comment: { allowedFields: [], branch: '', format: '', path: '' }
@@ -171,65 +307,64 @@ describe('Stapsher:utils', () => {
 
     it('detects missing config block', () => {
       entryType = 'message'
-      return expect(validateConfig(configData, { entryType })).rejects.toThrow()
+      expect(() => validateConfig(configData, entryType)).toThrow()
     })
 
     it('detects missing required options', () => {
       delete configData.allowedFields
-      return expect(
+      expect(() =>
         validateConfig(
           { comment: { branch: '', format: '', path: '' } },
-          { entryType }
+          entryType
         )
-      ).rejects.toThrow()
+      ).toThrow()
     })
 
     it('resolves with valid config', () => {
-      return expect(validateConfig(configData, { entryType })).resolves.toEqual(
+      expect(validateConfig(configData, entryType)).toEqual(
         configData[entryType]
       )
     })
   })
 
   describe('validateFields', () => {
-    let mockConfigMap = {
-      requiredFields: ['author', 'comment', 'email'],
-      allowedFields: ['author', 'comment', 'email', 'site']
-    }
-
-    let config = {
-      get: key => mockConfigMap[key]
-    }
+    let allowedFields = ['author', 'content', 'email', 'url']
+    let requiredFields = ['author', 'content', 'email']
 
     let fields
-
     beforeEach(() => {
       fields = {
         author: 'Author',
-        comment: 'Comment',
+        content: 'Comment',
         email: 'author@example.com',
-        site: 'https://author.example.com'
+        url: 'https://author.example.com'
       }
     })
 
-    it('throws if missing required fields', async () => {
+    it('throws if missing required fields', () => {
       delete fields.email
 
-      await validateFields(fields, { config }).catch(err => {
+      try {
+        validateFields(fields, allowedFields, requiredFields)
+      } catch (err) {
         expect(err).toMatchSnapshot()
-      })
+      }
     })
 
-    it('throws if fields not allowed', async () => {
+    it('throws if fields not allowed', () => {
       fields = { ...fields, rogue: true }
 
-      await validateFields(fields, { config }).catch(err => {
+      try {
+        validateFields(fields, allowedFields, requiredFields)
+      } catch (err) {
         expect(err).toMatchSnapshot()
-      })
+      }
     })
 
     it('resolves with valid fields', async () => {
-      expect(await validateFields(fields, { config })).toEqual(fields)
+      expect(
+        await validateFields(fields, allowedFields, requiredFields)
+      ).toEqual(fields)
     })
   })
 })

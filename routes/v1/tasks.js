@@ -21,7 +21,7 @@ router.post(
       })
 
       let fields = req.body.fields
-      let options = req.body.options || {}
+      let options = req.body.options
 
       let { redirect, ...result } = await stapsher.processNewEntry(
         fields,

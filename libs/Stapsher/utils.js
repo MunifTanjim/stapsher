@@ -6,7 +6,94 @@ const yaml = require('js-yaml')
 const GitHub = require('../GitHub')
 const GitLab = require('../GitLab')
 
+const { hash } = require('../Crypto')
 const { throwError } = require('../Error')
+
+/**
+ * Returns fields merged with generatedFields
+ * @param {Object} fields contains existing fields
+ * @param {Object} generatedFields contains fields to be generated
+ * @param {Object} data data needed for field generation
+ */
+const applyGeneratedFields = (fields, generatedFields, { date }) => {
+  try {
+    if (!generatedFields) {
+      return fields
+    }
+
+    let newFields = { ...fields }
+
+    for (let [name, field] of Object.entries(generatedFields)) {
+      if (_.isObject(field) && !_.isArray(field)) {
+        let { options = {}, type } = field
+
+        switch (type) {
+          case 'date':
+            newFields[name] = formatDate(date, options.format)
+            break
+        }
+      } else {
+        newFields[name] = field
+      }
+    }
+
+    return newFields
+  } catch (err) {
+    throw err
+  }
+}
+
+/**
+ * Returns fields merged with internalFields
+ * @param {Object} fields contains existing fields
+ * @param {Object} internalFields contains internal fields
+ */
+const applyInternalFields = (fields, internalFields) => {
+  try {
+    let newFields = { ...fields, ...internalFields }
+
+    return newFields
+  } catch (err) {
+    throw err
+  }
+}
+
+/**
+ * Returns transformed fields
+ * @param {Object} fields contains existing fields
+ * @param {Object} transformBlocks contains transformations
+ */
+const applyTransforms = (fields, transformBlocks) => {
+  try {
+    if (!transformBlocks) {
+      return fields
+    }
+
+    let newFields = { ...fields }
+
+    for (let [field, transforms] of Object.entries(transformBlocks)) {
+      if (!newFields[field]) continue
+
+      transforms = Array.isArray(transforms) ? transforms : [transforms]
+
+      transforms.forEach(transform => {
+        if (transform.includes('hash')) {
+          let algorithm = transform.split('~')[1] // 0: action
+
+          if (!algorithm) {
+            throwError('MISSING_HASH_ALGORITHM', { field, transform }, 422)
+          }
+
+          newFields[field] = hash(newFields[field], algorithm)
+        }
+      })
+    }
+
+    return newFields
+  } catch (err) {
+    throw err
+  }
+}
 
 const generatePullRequestBody = (dataObject, introduction) => {
   let tableData = [['Field', 'Value']]
@@ -52,6 +139,25 @@ const getFormatExtension = format => {
   }
 }
 
+/**
+ * Returns path for new file
+ * @param {String} path
+ * @param {String} filename
+ * @param {String} extension
+ * @param {String} format
+ */
+const getNewFilePath = (path, filename, extension, format) => {
+  try {
+    let resolvedPath = path.slice(-1) === '/' ? path.slice(0, -1) : path
+
+    let resolvedExtension = extension || getFormatExtension(format)
+
+    return `${resolvedPath}/${filename}.${resolvedExtension}`
+  } catch (err) {
+    throw err
+  }
+}
+
 const GetPlatformConstructor = platform => {
   switch (platform.toLowerCase()) {
     case 'github':
@@ -75,17 +181,23 @@ const formatDate = (date, format = 'isoUtcDateTime') => {
   }
 }
 
-const resolvePlaceholder = (property, dictionary) => {
+const resolvePlaceholders = (string, dictionary) => {
   try {
-    if (property.includes('_date')) {
-      let [key, format] = property.split('~')
-      let date = _.get(dictionary, key)
-      return formatDate(date, format || 'yyyy-mm-dd')
-    }
+    let resolvedString = string.replace(
+      /{(.*?)}/g,
+      (_placeholder, property) => {
+        if (property.includes('_date')) {
+          let [key, format] = property.split('~')
+          let date = _.get(dictionary, key)
+          return formatDate(date, format || 'yyyy-mm-dd')
+        }
 
-    let value = _.get(dictionary, property, '')
+        let value = _.get(dictionary, property, '')
+        return _.isObject(value) ? '' : value
+      }
+    )
 
-    return _.isObject(value) ? '' : value
+    return resolvedString
   } catch (err) {
     throw err
   }
@@ -101,7 +213,7 @@ const trimObjectStringEntries = object => {
   return newObject
 }
 
-const validateConfig = async (configData, { entryType }) => {
+const validateConfig = (configData, entryType) => {
   try {
     let config = configData[entryType]
 
@@ -125,10 +237,8 @@ const validateConfig = async (configData, { entryType }) => {
   }
 }
 
-const validateFields = async (fields, { config }) => {
+const validateFields = (fields, allowedFields, requiredFields) => {
   try {
-    let requiredFields = config.get('requiredFields')
-
     let missingRequiredFields = requiredFields.filter(
       field => _.isUndefined(fields[field]) || fields[field] === ''
     )
@@ -136,8 +246,6 @@ const validateFields = async (fields, { config }) => {
     if (missingRequiredFields.length) {
       throwError('MISSING_REQUIRED_FIELDS', { missingRequiredFields }, 400)
     }
-
-    let allowedFields = config.get('allowedFields')
 
     let notAllowedFields = Object.keys(fields).filter(
       field => !allowedFields.includes(field) && fields[field] !== ''
@@ -154,12 +262,16 @@ const validateFields = async (fields, { config }) => {
 }
 
 module.exports = {
+  applyGeneratedFields,
+  applyInternalFields,
+  applyTransforms,
   generatePullRequestBody,
   getContentDump,
   getFormatExtension,
+  getNewFilePath,
   GetPlatformConstructor,
   formatDate,
-  resolvePlaceholder,
+  resolvePlaceholders,
   trimObjectStringEntries,
   validateConfig,
   validateFields

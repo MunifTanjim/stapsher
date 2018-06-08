@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Stapsher:integration:new-entry calls necessary functions 1`] = `
+{
+  "platform": "github",
+  "username": "Harold",
+  "repository": "TheMachine",
+  "branch": "master",
+  "entryType": "comment",
+  "platformBaseUrl": "https://api.github.com"
+}
+`;
+
+exports[`Stapsher:integration:new-entry calls necessary functions 2`] = `
+{
+  "clientIP": "127.0.0.1",
+  "clientUserAgent": "TheMachine/1.0",
+  "clientReferrer": "r007",
+  "recaptchaResponse": "qwerty"
+}
+`;

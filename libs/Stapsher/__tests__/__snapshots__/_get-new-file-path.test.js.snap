@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`libs/Stapsher:__getNewFilePath calls necessary functions 1`] = `
+[
+  "data/comments",
+  "0.7w0.z3r0.7w0.53v3n",
+  null,
+  "yaml"
+]
+`;
