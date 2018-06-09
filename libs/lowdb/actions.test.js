@@ -19,7 +19,7 @@ let installation, repos, cache
 
 /* the sequence of testing functions matters here */
 
-describe('lowdb:actions', () => {
+describe('libs/lowdb:actions', () => {
   describe('createInstallationOnCache', () => {
     it('works as expected', async () => {
       expect.assertions(2)

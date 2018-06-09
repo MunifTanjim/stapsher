@@ -2,6 +2,7 @@ const _ = require('lodash')
 const helpers = require('../../../__tests__/helpers')
 
 helpers.addSnapshotSerializers()
+helpers.disableNetConnect()
 
 helpers.mockDate()
 helpers.mockUUIDv1()

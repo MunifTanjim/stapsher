@@ -1,6 +1,7 @@
 const helpers = require('../../../__tests__/helpers')
 
 helpers.addSnapshotSerializers()
+helpers.disableNetConnect()
 
 jest.mock('recaptcha-validator')
 const recaptcha = require('recaptcha-validator')

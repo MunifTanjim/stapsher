@@ -57,10 +57,11 @@ typings/
 # dotenv environment variables file
 .env*
 !.env.example
+!.env.test
 
 # Ignored directories
-cache
-secrets
+/cache
+/secrets
 
 # Others
 .firebaserc

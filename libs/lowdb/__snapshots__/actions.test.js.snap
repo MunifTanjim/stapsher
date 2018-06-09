@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`lowdb:actions addRepoToCache works as expected 1`] = `
+exports[`libs/lowdb:actions addRepoToCache works as expected 1`] = `
 {
   "Harold": {
     "repos": {
@@ -29,7 +29,7 @@ exports[`lowdb:actions addRepoToCache works as expected 1`] = `
 }
 `;
 
-exports[`lowdb:actions addReposToCache works as expected 1`] = `
+exports[`libs/lowdb:actions addReposToCache works as expected 1`] = `
 {
   "Harold": {
     "repos": {
@@ -74,7 +74,7 @@ exports[`lowdb:actions addReposToCache works as expected 1`] = `
 }
 `;
 
-exports[`lowdb:actions createInstallationOnCache works as expected 1`] = `
+exports[`libs/lowdb:actions createInstallationOnCache works as expected 1`] = `
 {
   "Harold": {
     "repos": {
@@ -91,7 +91,7 @@ exports[`lowdb:actions createInstallationOnCache works as expected 1`] = `
 }
 `;
 
-exports[`lowdb:actions createInstallationOnCache works as expected 2`] = `
+exports[`libs/lowdb:actions createInstallationOnCache works as expected 2`] = `
 {
   "Harold": {
     "repos": {
@@ -120,7 +120,7 @@ exports[`lowdb:actions createInstallationOnCache works as expected 2`] = `
 }
 `;
 
-exports[`lowdb:actions deleteInstallationFromCache works as expected 1`] = `
+exports[`libs/lowdb:actions deleteInstallationFromCache works as expected 1`] = `
 {
   "Harold": {
     "repos": {
@@ -137,7 +137,7 @@ exports[`lowdb:actions deleteInstallationFromCache works as expected 1`] = `
 }
 `;
 
-exports[`lowdb:actions removeReposFromCache works as expected 1`] = `
+exports[`libs/lowdb:actions removeReposFromCache works as expected 1`] = `
 {
   "Harold": {
     "repos": {

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Stapsher:routes:error404 responds correctly for 404 error 1`] = `
+exports[`Stapsher:integration:error404 responds correctly for 404 error 1`] = `
 {
   "code": "API_ENDPOINT_NOT_FOUND",
   "info": {

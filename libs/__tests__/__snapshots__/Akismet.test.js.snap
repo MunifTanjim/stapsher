@@ -1,13 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Akismet:akismetCheckSpam handles errors 1`] = `
+exports[`libs/Akismet akismetCheckSpam handles errors 1`] = `
 {
   "code": "AKISMET_CHECK_SPAM_FAILED",
   "cause": {}
 }
 `;
 
-exports[`Akismet:akismetVerify handles errors 1`] = `
+exports[`libs/Akismet akismetVerify handles errors 1`] = `
 {
   "code": "AKISMET_VERIFICATION_FAILED",
   "cause": {}

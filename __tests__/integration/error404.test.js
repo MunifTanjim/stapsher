@@ -8,7 +8,7 @@ const app = require('../../app')
 beforeAll(done => helpers.startServer(done, app))
 afterAll(done => helpers.stopServer(done, app))
 
-describe('Stapsher:routes:error404', () => {
+describe('Stapsher:integration:error404', () => {
   let endpoint = '/non-existent-path'
 
   it('responds correctly for 404 error', async () => {

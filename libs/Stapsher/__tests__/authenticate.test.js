@@ -1,5 +1,7 @@
 const helpers = require('../../../__tests__/helpers')
 
+helpers.disableNetConnect()
+
 jest.mock('../../GitHub')
 const GitHub = require('../../GitHub')
 

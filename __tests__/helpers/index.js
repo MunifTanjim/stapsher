@@ -2,6 +2,7 @@ module.exports.addSnapshotSerializers = require('./jest').addSnapshotSerializers
 
 module.exports.disableRequestLogger = require('./disablers').disableRequestLogger
 module.exports.disableExpressBrute = require('./disablers').disableExpressBrute
+module.exports.disableNetConnect = require('./disablers').disableNetConnect
 
 module.exports.startServer = require('./server').startServer
 module.exports.stopServer = require('./server').stopServer

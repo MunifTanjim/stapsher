@@ -5,6 +5,7 @@ const { loadConfig } = require('../../../configs/client')
 const helpers = require('../../../__tests__/helpers')
 
 helpers.addSnapshotSerializers()
+helpers.disableNetConnect()
 
 const akismet = require('../../Akismet')
 akismet.akismetCheckSpam = jest.fn()
