@@ -8,6 +8,7 @@ module.exports.stopServer = require('./server').stopServer
 
 module.exports.mockDate = require('./mocks').mockDate
 module.exports.mockUUIDv1 = require('./mocks').mockUUIDv1
+module.exports.unmockDate = require('./mocks').unmockDate
 
 module.exports.getParameters = () => require('./info').parameters
 module.exports.getFields = () => require('./info').fields

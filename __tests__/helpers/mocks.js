@@ -5,9 +5,10 @@ module.exports.mockUUIDv1 = () => {
   return mockId
 }
 
+/* eslint no-global-assign:off */
+const actualDateClass = Date
 const mockDate = new Date(0)
 module.exports.mockDate = () => {
-  /* eslint no-global-assign:off */
   Date = class extends Date {
     constructor() {
       return mockDate
@@ -15,4 +16,8 @@ module.exports.mockDate = () => {
   }
 
   return mockDate
+}
+
+module.exports.unmockDate = () => {
+  Date = actualDateClass
 }

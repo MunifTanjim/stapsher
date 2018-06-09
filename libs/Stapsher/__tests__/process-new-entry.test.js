@@ -98,7 +98,7 @@ describe('libs/Stapsher:processNewEntry', () => {
   })
 
   it('returns fields with redirect if redirect options present', async () => {
-    let redirect = { success: 'http://example.com/success' }
+    let redirect = { success: 'https://example.com/success' }
     options = { ...options, redirect }
 
     let result = await stapsher.processNewEntry(fields, options)
@@ -121,7 +121,7 @@ describe('libs/Stapsher:processNewEntry', () => {
       throw new Error()
     })
 
-    let redirect = { failure: 'http://example.com/failure' }
+    let redirect = { failure: 'https://example.com/failure' }
     options = { ...options, redirect }
 
     await stapsher.processNewEntry(fields, options).catch(err => {

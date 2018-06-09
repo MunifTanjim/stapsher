@@ -11,15 +11,21 @@ exports[`Stapsher:utils GetPlatformConstructor throws error if unsupported platf
 
 exports[`Stapsher:utils applyGeneratedFields generates new fields 1`] = `
 {
-  "name": "Harold",
-  "role": "admin",
+  "author": "Samantha Groves",
+  "email": "samantha@example.com",
+  "url": "https://samantha.example.com",
+  "content": "We might as well be a symphony",
+  "role": "Analog Interface",
   "timestamp": 0
 }
 `;
 
 exports[`Stapsher:utils applyInternalFields adds internal fields 1`] = `
 {
-  "name": "Harold",
+  "author": "Samantha Groves",
+  "email": "samantha@example.com",
+  "url": "https://samantha.example.com",
+  "content": "We might as well be a symphony",
   "_id": "7w0.z3r0.7w0.53v3n"
 }
 `;
@@ -28,7 +34,7 @@ exports[`Stapsher:utils applyTransforms throws error if hash algorithm is missin
 {
   "code": "MISSING_HASH_ALGORITHM",
   "cause": {
-    "field": "name",
+    "field": "email",
     "transform": "hash"
   }
 }
@@ -36,25 +42,37 @@ exports[`Stapsher:utils applyTransforms throws error if hash algorithm is missin
 
 exports[`Stapsher:utils applyTransforms transforms fields 1`] = `
 {
-  "name": "52e10d8b23b93b7467296125130aafa7"
+  "author": "Samantha Groves",
+  "email": "f948d4367793839ddc25da5d98c6166d",
+  "url": "https://samantha.example.com",
+  "content": "We might as well be a symphony"
 }
 `;
 
 exports[`Stapsher:utils generatePullRequestBody works as expected 1`] = `
-"PullRequest
-| Field | Value |
-| ----- | ----- |
-| name  | John  |"
+"pull_request_introduction
+| Field   | Value                          |
+| ------- | ------------------------------ |
+| author  | Samantha Groves                |
+| email   | samantha@example.com           |
+| url     | https://samantha.example.com   |
+| content | We might as well be a symphony |"
 `;
 
 exports[`Stapsher:utils getContentDump returns dump for format 1`] = `
 "{
-  \\"name\\": \\"John\\"
+  \\"author\\": \\"Samantha Groves\\",
+  \\"email\\": \\"samantha@example.com\\",
+  \\"url\\": \\"https://samantha.example.com\\",
+  \\"content\\": \\"We might as well be a symphony\\"
 }"
 `;
 
 exports[`Stapsher:utils getContentDump returns dump for format 2`] = `
-"name: John
+"author: Samantha Groves
+email: samantha@example.com
+url: 'https://samantha.example.com'
+content: We might as well be a symphony
 "
 `;
 

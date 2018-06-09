@@ -1,19 +1,19 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Stapsher:integration:verify-akismet responses when disabled 1`] = `
+exports[`Stapsher:integration:verify-akismet responds when disabled 1`] = `
 {
   "enabled": false
 }
 `;
 
-exports[`Stapsher:integration:verify-akismet responses when invalid 1`] = `
+exports[`Stapsher:integration:verify-akismet responds when invalid 1`] = `
 {
   "enabled": true,
   "validAPIKey": false
 }
 `;
 
-exports[`Stapsher:integration:verify-akismet responses when valid 1`] = `
+exports[`Stapsher:integration:verify-akismet responds when valid 1`] = `
 {
   "enabled": true,
   "validAPIKey": true

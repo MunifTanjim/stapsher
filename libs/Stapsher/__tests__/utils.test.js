@@ -1,4 +1,9 @@
-const { addSnapshotSerializers } = require('../../../__tests__/helpers')
+const helpers = require('../../../__tests__/helpers')
+
+helpers.addSnapshotSerializers()
+
+let mockDate = helpers.mockDate()
+let mockId = helpers.mockUUIDv1()
 
 const {
   applyGeneratedFields,
@@ -21,21 +26,14 @@ const dateFormat = require('dateformat')
 const GitHub = require('../../GitHub')
 const GitLab = require('../../GitLab')
 
-addSnapshotSerializers()
-
 describe('Stapsher:utils', () => {
   describe('applyGeneratedFields', () => {
-    let initialFields = { name: 'Harold' }
+    let initialFields = helpers.getFields()
 
-    let data = { date: new Date(0) }
+    let data = { date: mockDate }
     let generatedFields = {
-      role: 'admin',
-      timestamp: {
-        type: 'date',
-        options: {
-          format: 'unix'
-        }
-      }
+      role: 'Analog Interface',
+      ...helpers.readConfigFile()['comment']['generatedFields']
     }
 
     let fields
@@ -60,9 +58,9 @@ describe('Stapsher:utils', () => {
   })
 
   describe('applyInternalFields', () => {
-    let initialFields = { name: 'Harold' }
+    let initialFields = helpers.getFields()
 
-    let internalFields = { _id: '7w0.z3r0.7w0.53v3n' }
+    let internalFields = { _id: mockId }
 
     let fields
     beforeEach(() => {
@@ -82,11 +80,9 @@ describe('Stapsher:utils', () => {
   })
 
   describe('applyTransforms', () => {
-    let initialFields = { name: 'Harold' }
+    let initialFields = helpers.getFields()
 
-    let transformBlocks = {
-      name: 'hash~md5'
-    }
+    let transformBlocks = helpers.readConfigFile()['comment']['transforms']
 
     let fields
     beforeEach(() => {
@@ -109,7 +105,7 @@ describe('Stapsher:utils', () => {
     })
 
     it('throws error if hash algorithm is missing', () => {
-      transformBlocks.name = 'hash'
+      transformBlocks.email = 'hash'
 
       try {
         applyTransforms(fields, transformBlocks)
@@ -120,15 +116,17 @@ describe('Stapsher:utils', () => {
   })
 
   describe('generatePullRequestBody', () => {
+    let dataObject = helpers.getFields()
+
     it('works as expected', () => {
       expect(
-        generatePullRequestBody({ name: 'John' }, 'PullRequest')
+        generatePullRequestBody(dataObject, 'pull_request_introduction')
       ).toMatchSnapshot()
     })
   })
 
   describe('getContentDump', () => {
-    let dataObject = { name: 'John' }
+    let dataObject = helpers.getFields()
 
     it.each(['json', 'yaml'])('returns dump for format', format => {
       expect(getContentDump(dataObject, format)).toMatchSnapshot()
@@ -221,9 +219,11 @@ describe('Stapsher:utils', () => {
   })
 
   describe('formatDate', () => {
+    helpers.unmockDate()
     let date = new Date()
     let unixMilliSeconds = date.getTime()
     let unixSeconds = Math.floor(date.getTime() / 1000)
+    helpers.mockDate()
 
     it.each([
       ['unix-milliseconds', unixMilliSeconds],
@@ -246,10 +246,10 @@ describe('Stapsher:utils', () => {
 
   describe('resolvePlaceholders', () => {
     let dictionary = {
-      _id: '2.0.2.7',
-      _date: new Date(0),
-      fields: { name: 'John' },
-      options: { alias: 'Wonder Boy' }
+      _id: mockId,
+      _date: mockDate,
+      fields: helpers.getFields(),
+      options: helpers.getOptions()
     }
 
     it('resolves _date, w and w/o format', () => {
@@ -264,9 +264,10 @@ describe('Stapsher:utils', () => {
 
     it('resolves placeholders in string', () => {
       let { _id, fields, options } = dictionary
+
       expect(
-        resolvePlaceholders('{_id} {fields.name} {options.alias}', dictionary)
-      ).toBe(`${_id} ${fields.name} ${options.alias}`)
+        resolvePlaceholders('{_id} {fields.author} {options.alias}', dictionary)
+      ).toBe(`${_id} ${fields.author} ${options.alias}`)
     })
 
     it('resolves Object to empty string', () => {
@@ -277,12 +278,12 @@ describe('Stapsher:utils', () => {
   describe('trimObjectStringEntries', () => {
     let object = {
       name: ' John Reese ',
-      alias: '\nWonder Boy\n'
+      alias: '\n Primary Asset \n'
     }
 
     let trimmedObject = {
       name: 'John Reese',
-      alias: 'Wonder Boy'
+      alias: 'Primary Asset'
     }
 
     it('trims string properties', () => {
@@ -290,34 +291,31 @@ describe('Stapsher:utils', () => {
     })
 
     it("doesn't touch non-string properties", () => {
+      let aliases = ['Wonder Boy ', ' Angel of Death']
+
       expect(
-        trimObjectStringEntries({ ...object, status: [' Primary Asset '] })
-      ).toEqual({ ...trimmedObject, status: [' Primary Asset '] })
+        trimObjectStringEntries({ ...object, aliases: [...aliases] })
+      ).toEqual({ ...trimmedObject, aliases: [...aliases] })
     })
   })
 
   describe('validateConfig', () => {
     let configData, entryType
     beforeEach(() => {
-      configData = {
-        comment: { allowedFields: [], branch: '', format: '', path: '' }
-      }
-      entryType = 'comment'
+      configData = helpers.readConfigFile()
+      entryType = helpers.getParameters().entryType
     })
 
     it('detects missing config block', () => {
-      entryType = 'message'
+      entryType = 'dummy'
+
       expect(() => validateConfig(configData, entryType)).toThrow()
     })
 
     it('detects missing required options', () => {
-      delete configData.allowedFields
-      expect(() =>
-        validateConfig(
-          { comment: { branch: '', format: '', path: '' } },
-          entryType
-        )
-      ).toThrow()
+      delete configData[entryType].allowedFields
+
+      expect(() => validateConfig(configData, entryType)).toThrow()
     })
 
     it('resolves with valid config', () => {
@@ -328,17 +326,12 @@ describe('Stapsher:utils', () => {
   })
 
   describe('validateFields', () => {
-    let allowedFields = ['author', 'content', 'email', 'url']
-    let requiredFields = ['author', 'content', 'email']
+    let allowedFields = helpers.readConfigFile().comment.allowedFields
+    let requiredFields = helpers.readConfigFile().comment.requiredFields
 
     let fields
     beforeEach(() => {
-      fields = {
-        author: 'Author',
-        content: 'Comment',
-        email: 'author@example.com',
-        url: 'https://author.example.com'
-      }
+      fields = { ...helpers.getFields() }
     })
 
     it('throws if missing required fields', () => {
