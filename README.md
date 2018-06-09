@@ -1,12 +1,13 @@
-# Stapsher
+[<img alt="Stapsher Logo" src="https://raw.githubusercontent.com/extraStatic/stapsher-docs/master/static/logo.svg?sanitize=true" width="128px">](#stapsher)
+
+[![Built with Node.js](https://img.shields.io/badge/built_with-node.js-brightgreen.svg?style=for-the-badge)](#stapsher)
+[![Stapsher Coveralls](https://img.shields.io/coveralls/github/extraStatic/stapsher.svg?style=for-the-badge)](https://coveralls.io/github/extraStatic/stapsher)
+[![Stapsher Docs](https://img.shields.io/badge/docs-stapsher-blue.svg?style=for-the-badge)](https://stapsher.netlify.com)
+[![Stapsher License](https://img.shields.io/github/license/extraStatic/stapsher.svg?style=for-the-badge)](https://github.com/extraStatic/stapsher/blob/master/LICENSE)
+
+# Stapsher 
 
 Stapsher is an API service for handling user-generated contents on static sites, built with Node.js.
-
-Stapsher receives POST requests from your site's forms, validates the data and processes them. And finally it pushes the generated data file to your repository. Or if you have moderation enabled, it will create a pull request instead.
-
-Your static site generator can then generate the those user-generated contents from the data files created by Stapsher.
-
-In short, Stapsher helps you to keep all the contents of your site as static files in a git repository.
 
 Stapsher currently works with:
 
@@ -14,6 +15,15 @@ Stapsher currently works with:
 - GitLab
 
 BitBucket support is planned for future.
+
+## What does it do?
+
+In short:
+
+- Receives user-generated contents
+- Validates & processes them
+- Generates static data file
+- Pushes the data file git to repository
 
 ## Documentation
 
