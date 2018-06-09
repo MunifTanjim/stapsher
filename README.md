@@ -1,7 +1,7 @@
 [<img alt="Stapsher Logo" src="https://raw.githubusercontent.com/extraStatic/stapsher-docs/master/static/logo.svg?sanitize=true" width="128px">](#stapsher)
 
 [![Built with Node.js](https://img.shields.io/badge/built_with-node.js-brightgreen.svg?style=for-the-badge)](#stapsher)
-[![Stapsher Coveralls](https://img.shields.io/coveralls/github/extraStatic/stapsher.svg?style=for-the-badge)](https://coveralls.io/github/extraStatic/stapsher)
+[![Stapsher Coverage](https://img.shields.io/codecov/c/github/extraStatic/stapsher.svg?style=for-the-badge)](https://codecov.io/gh/extraStatic/stapsher)
 [![Stapsher Docs](https://img.shields.io/badge/docs-stapsher-blue.svg?style=for-the-badge)](https://stapsher.netlify.com)
 [![Stapsher License](https://img.shields.io/github/license/extraStatic/stapsher.svg?style=for-the-badge)](https://github.com/extraStatic/stapsher/blob/master/LICENSE)
 

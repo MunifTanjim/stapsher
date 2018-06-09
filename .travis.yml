@@ -8,7 +8,8 @@ before_install:
   - npm install -g npm@latest
 install:
   - npm ci
+  - npm install --no-save codecov
 script:
   - jest --ci --coverage
 after_success:
-  - cat coverage/lcov.info | coveralls
+  - codecov
