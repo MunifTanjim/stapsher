@@ -4,3 +4,11 @@ node_js:
 cache:
   directories:
     - node_modules
+before_install:
+  - npm install -g npm@latest
+install:
+  - npm ci
+script:
+  - jest --ci --coverage
+after_success:
+  - cat coverage/lcov.info | coveralls
