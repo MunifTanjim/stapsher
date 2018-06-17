@@ -1,10 +1,8 @@
-const fs = require('fs')
-const path = require('path')
 const crypto = require('crypto')
 
 const config = require('../configs/server')
 
-const privateKey = fs.readFileSync(path.resolve(config.get('rsaPrivateKey')))
+const privateKey = config.get('rsaPrivateKey')
 
 const hash = (string, algorithm, encoding = 'hex') => {
   try {

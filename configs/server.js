@@ -2,6 +2,8 @@ require('./env')
 
 /* global NODE_ENV:false */
 
+const fs = require('fs')
+const path = require('path')
 const convict = require('convict')
 
 const configSchema = {
@@ -20,7 +22,7 @@ const configSchema = {
   firebase: {
     serviceAccount: {
       doc: 'Path to JSON file with Firebase service account credentials',
-      format: String,
+      format: 'FilePath',
       default: null,
       env: 'FIREBASE_SERVICE_ACCOUNT'
     }
@@ -35,7 +37,7 @@ const configSchema = {
       },
       privateKey: {
         doc: 'Path to the Private Key for GitHub Application',
-        format: String,
+        format: 'FilePath',
         default: null,
         env: 'GITHUB_APP_PRIVATE_KEY'
       },
@@ -59,7 +61,7 @@ const configSchema = {
   },
   rsaPrivateKey: {
     doc: 'Path to the RSA Private Key for Stapsher',
-    format: String,
+    format: 'FilePath',
     default: null,
     env: 'RSA_PRIVATE_KEY'
   },
@@ -106,6 +108,22 @@ if (['development'].includes(NODE_ENV)) {
     configSchema[key] = value
   }
 }
+
+convict.addFormat({
+  name: 'FilePath',
+  coerce: val => {
+    if (!fs.existsSync(path.resolve(val))) {
+      throw Error(`File doesn't exists: ${val}`)
+    }
+
+    let content = fs.readFileSync(path.resolve(val))
+
+    return path.extname(val).toLowerCase() === '.json'
+      ? JSON.parse(content.toString())
+      : content
+  },
+  validate: () => true
+})
 
 const config = convict(configSchema)
 

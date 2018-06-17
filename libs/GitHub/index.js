@@ -1,5 +1,3 @@
-const path = require('path')
-const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const OctokitREST = require('@octokit/rest')
 
@@ -10,9 +8,7 @@ const config = require('../../configs/server')
 const { throwError } = require('../Error')
 const { fetchInstallationId } = require('../GitHub/actions')
 
-const privateKey = fs.readFileSync(
-  path.resolve(config.get('github.app.privateKey'))
-)
+const privateKey = config.get('github.app.privateKey')
 
 class GitHub {
   constructor(info = {}, baseUrl) {

@@ -1,13 +1,10 @@
-const path = require('path')
 const admin = require('firebase-admin')
 
 const config = require('../../configs/server')
 
 const env = config.get('env')
 
-const serviceAccount = require(path.resolve(
-  config.get('firebase.serviceAccount')
-))
+const serviceAccount = config.get('firebase.serviceAccount')
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
