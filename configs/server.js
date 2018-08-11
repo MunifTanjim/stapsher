@@ -126,11 +126,13 @@ if (['development'].includes(NODE_ENV)) {
 convict.addFormat({
   name: 'FilePath',
   coerce: val => {
-    if (!fs.existsSync(path.resolve(val))) {
+    let filePath = path.resolve(val)
+
+    if (!fs.existsSync(filePath)) {
       throw Error(`File doesn't exists: ${val}`)
     }
 
-    let content = fs.readFileSync(path.resolve(val))
+    let content = fs.readFileSync(filePath)
 
     return path.extname(val).toLowerCase() === '.json'
       ? JSON.parse(content.toString())

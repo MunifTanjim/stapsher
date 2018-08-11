@@ -6,4 +6,11 @@ env_file=${1}
 
 . .scripts/docker/variables.sh
 
-docker container run -d --name ${name} -p 3000:${port} -v ${cache_volume}:${cache_path} -v ${logs}:${logs_path} -v ${secrets}:${secrets_path}:ro --env-file ${env_file} ${image_repo}
+docker container run --detach \
+  --name ${name} \
+  --publish ${port}:3000 \
+  --volume ${cache_volume}:${cache_path} \
+  --volume ${logs}:${logs_path} \
+  --volume ${secrets}:${secrets_path}:ro \
+  --env-file ${env_file} \
+    ${image_repo}
