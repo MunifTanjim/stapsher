@@ -21,6 +21,7 @@ exports[`libs/Stapsher:__throwSpam calls necessary functions 1`] = `
 exports[`libs/Stapsher:__throwSpam throws error if spam is true 1`] = `
 {
   "code": "AKISMET_IS_SPAM",
+  "statusCode": 400,
   "cause": {
     "entryObject": {
       "user_ip": "127.0.0.1",

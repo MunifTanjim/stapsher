@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`libs/SCM throws error if platform not supported 1`] = `
+{
+  "code": "UNSUPPORTED_SCM_PLATFORM",
+  "statusCode": 400,
+  "cause": {
+    "platform": "facebook"
+  }
+}
+`;

@@ -3,7 +3,6 @@ const LowdbStore = require('express-brute-lowdb')
 
 const { FileSync, Memory } = require('./lowdb').adapters
 
-const { bruteStoreErrorHandler } = require('./Error/handlers')
 const httpCodes = require('./Error/httpcodes')
 
 const config = require('../configs/server')
@@ -17,8 +16,7 @@ const store = new LowdbStore({
 const bruteforce = new ExpressBrute(store, {
   minWait: 5 * 1000,
   maxWait: 60 * 1000,
-  lifetime: 60,
-  handleStoreError: bruteStoreErrorHandler
+  lifetime: 60
 })
 
 const getSecondsUntilNextRequest = nextValidRequestDate =>

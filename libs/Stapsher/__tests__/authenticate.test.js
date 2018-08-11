@@ -2,8 +2,8 @@ const helpers = require('../../../__tests__/helpers')
 
 helpers.disableNetConnect()
 
-jest.mock('../../GitHub')
-const GitHub = require('../../GitHub')
+jest.mock('../../SCM/GitHub')
+const GitHub = require('../../SCM/GitHub')
 
 const Stapsher = require('../../Stapsher')
 

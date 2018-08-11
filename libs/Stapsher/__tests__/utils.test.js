@@ -13,7 +13,6 @@ const {
   getContentDump,
   getFormatExtension,
   getNewFilePath,
-  GetPlatformConstructor,
   formatDate,
   resolvePlaceholders,
   trimObjectStringEntries,
@@ -23,10 +22,10 @@ const {
 
 const dateFormat = require('dateformat')
 
-const GitHub = require('../../GitHub')
-const GitLab = require('../../GitLab')
+const GitHub = require('../../SCM/GitHub')
+const GitLab = require('../../SCM/GitLab')
 
-describe('Stapsher:utils', () => {
+describe('libs/Stapsher/utils', () => {
   describe('applyGeneratedFields', () => {
     let initialFields = helpers.getFields()
 
@@ -192,29 +191,6 @@ describe('Stapsher:utils', () => {
 
     it('uses format to get fallback extension', () => {
       expect(getNewFilePath(path, filename, '', format)).toMatchSnapshot()
-    })
-  })
-
-  describe('GetPlatformConstructor', () => {
-    it.each([['github', GitHub], ['gitlab', GitLab]])(
-      'returns correct Constructor for',
-      (platform, constructor) => {
-        expect(GetPlatformConstructor(platform)).toBe(constructor)
-      }
-    )
-
-    it('supports case-insensitive platform', () => {
-      expect(GetPlatformConstructor('GITHUB')).toBe(
-        GetPlatformConstructor('github')
-      )
-    })
-
-    it('throws error if unsupported platform', () => {
-      try {
-        GetPlatformConstructor('facebook')
-      } catch (err) {
-        expect(err).toMatchSnapshot()
-      }
     })
   })
 

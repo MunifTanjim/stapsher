@@ -2,6 +2,7 @@ const deepsort = require('deep-sort-object')
 const uuidv1 = require('uuid/v1')
 const recaptcha = require('recaptcha-validator')
 
+const SCM = require('../SCM')
 const { throwError } = require('../Error')
 const { akismetCheckSpam } = require('../Akismet')
 
@@ -16,7 +17,6 @@ const {
   getNewFilePath,
   trimObjectStringEntries,
   generatePullRequestBody,
-  GetPlatformConstructor,
   validateConfig,
   validateFields
 } = require('./utils')
@@ -34,18 +34,18 @@ class Stapsher {
     this._date = new Date()
 
     this.entryType = entryType
-    this.info = {
+
+    this.info = {}
+
+    this.scmInfo = {
+      platform,
+      baseUrl: platformBaseUrl,
       username,
       repository,
       branch
     }
 
-    this.extraInfo = {}
-
-    this.platform = new (GetPlatformConstructor(platform))(
-      this.info,
-      platformBaseUrl
-    )
+    this.scm = SCM(this.scmInfo)
 
     this.configPath = 'stapsher.yaml'
     this.config = null
@@ -58,27 +58,23 @@ class Stapsher {
   }
 
   async authenticate() {
-    try {
-      return this.platform.authenticate()
-    } catch (err) {
-      throw err
-    }
+    return this.scm.authenticate()
   }
 
-  addExtraInfo(infoObject) {
-    this.extraInfo = { ...this.extraInfo, ...infoObject }
+  addInfo(infoObject) {
+    this.info = { ...this.info, ...infoObject }
   }
 
   async getConfig() {
     try {
-      let configData = await this.platform.readFile(this.configPath)
+      let configData = await this.scm.readFile(this.configPath)
 
       let config = validateConfig(configData, this.entryType)
 
-      if (config.branch !== this.info.branch) {
+      if (config.branch !== this.scmInfo.branch) {
         throwError(
           'BRANCH_MISMATCH',
-          { branch: { url: this.info.branch, config: config.branch } },
+          { branch: { url: this.scmInfo.branch, config: config.branch } },
           422
         )
       }
@@ -151,8 +147,8 @@ class Stapsher {
 
       await recaptcha(
         this.config.get('recaptcha.secretKey'),
-        this.extraInfo.recaptchaResponse,
-        this.extraInfo.clientIP
+        this.info.recaptchaResponse,
+        this.info.clientIP
       )
     } catch (err) {
       throwError('RECAPTCHA_ERROR', err, 400)
@@ -166,9 +162,9 @@ class Stapsher {
       let fields = this.rawFields
 
       let entryObject = {
-        user_ip: this.extraInfo.clientIP,
-        user_agent: this.extraInfo.clientUserAgent,
-        referrer: this.extraInfo.clientReferrer,
+        user_ip: this.info.clientIP,
+        user_agent: this.info.clientUserAgent,
+        referrer: this.info.clientReferrer,
         permalink: '',
         comment_type: this.config.get('akismet.type'),
         comment_author: fields[this.config.get('akismet.fields.author')],
@@ -225,7 +221,7 @@ class Stapsher {
           this.config.get('pullRequestBody')
         )
 
-        await this.platform.writeFileAndCreatePR(
+        await this.scm.writeFileAndCreatePR(
           path,
           commitMessage,
           content,
@@ -233,7 +229,7 @@ class Stapsher {
           prBody
         )
       } else {
-        await this.platform.writeFile(path, commitMessage, content)
+        await this.scm.writeFile(path, commitMessage, content)
       }
 
       let result = { fields: this.fields }

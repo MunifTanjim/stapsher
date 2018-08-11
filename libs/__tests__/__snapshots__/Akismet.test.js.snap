@@ -3,13 +3,15 @@
 exports[`libs/Akismet akismetCheckSpam handles errors 1`] = `
 {
   "code": "AKISMET_CHECK_SPAM_FAILED",
-  "cause": {}
+  "statusCode": 500,
+  "cause": "Error: error"
 }
 `;
 
 exports[`libs/Akismet akismetVerify handles errors 1`] = `
 {
   "code": "AKISMET_VERIFICATION_FAILED",
-  "cause": {}
+  "statusCode": 500,
+  "cause": "Error: error"
 }
 `;

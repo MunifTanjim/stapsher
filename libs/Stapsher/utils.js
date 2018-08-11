@@ -3,9 +3,6 @@ const dateFormat = require('dateformat')
 const markdownTable = require('markdown-table')
 const yaml = require('js-yaml')
 
-const GitHub = require('../GitHub')
-const GitLab = require('../GitLab')
-
 const { hash } = require('../Crypto')
 const { throwError } = require('../Error')
 
@@ -158,17 +155,6 @@ const getNewFilePath = (path, filename, extension, format) => {
   }
 }
 
-const GetPlatformConstructor = platform => {
-  switch (platform.toLowerCase()) {
-    case 'github':
-      return GitHub
-    case 'gitlab':
-      return GitLab
-    default:
-      throwError('UNSUPPORTED_PLATFORM', { platform }, 400)
-  }
-}
-
 const formatDate = (date, format = 'isoUtcDateTime') => {
   switch (format) {
     case 'unix':
@@ -269,7 +255,6 @@ module.exports = {
   getContentDump,
   getFormatExtension,
   getNewFilePath,
-  GetPlatformConstructor,
   formatDate,
   resolvePlaceholders,
   trimObjectStringEntries,

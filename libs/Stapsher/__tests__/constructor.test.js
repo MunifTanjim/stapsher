@@ -3,6 +3,10 @@ const helpers = require('../../../__tests__/helpers')
 const mockId = helpers.mockUUIDv1()
 const mockDate = helpers.mockDate()
 
+jest.mock('../../SCM')
+const SCM = require('../../SCM')
+SCM.mockImplementation(() => true)
+
 const Stapsher = require('../../Stapsher')
 
 describe('libs/Stapsher:constructor', () => {
@@ -26,16 +30,27 @@ describe('libs/Stapsher:constructor', () => {
     expect(stapsher._date).toBe(mockDate)
   })
 
-  it('sets info', () => {
-    expect(stapsher.info).toEqual({
+  it('sets entryType', () => {
+    expect(stapsher.entryType).toBe(parameters.entryType)
+  })
+
+  it('has empty info', () => {
+    expect(stapsher.info).toEqual({})
+  })
+
+  it('sets scmInfo', () => {
+    expect(stapsher.scmInfo).toEqual({
+      platform: parameters.platform,
+      baseUrl: parameters.platformBaseUrl,
       username: parameters.username,
       repository: parameters.repository,
       branch: parameters.branch
     })
   })
 
-  it('sets entryType', () => {
-    expect(stapsher.entryType).toBe(parameters.entryType)
+  it('sets scm', () => {
+    expect(SCM).toHaveBeenCalledWith(stapsher.scmInfo)
+    expect(stapsher.scm).toBe(SCM.mock.results[0].value)
   })
 
   it(`sets configPath to ${configPath}`, () => {

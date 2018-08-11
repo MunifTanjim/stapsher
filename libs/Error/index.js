@@ -10,7 +10,8 @@ class StapsherError extends Error {
   toJSON() {
     return {
       code: this.message,
-      cause: this.cause
+      statusCode: this.statusCode,
+      cause: this.cause instanceof Error ? this.cause.toString() : this.cause
     }
   }
 }

@@ -8,7 +8,7 @@ const recaptcha = require('recaptcha-validator')
 
 const Stapsher = require('../../Stapsher')
 
-const extraInfo = {
+const info = {
   clientIP: '127.0.0.1',
   recaptchaResponse: 'qwerty'
 }
@@ -30,7 +30,7 @@ describe('libs/Stapsher:__checkRecaptcha', () => {
       get: key => mockConfig[key]
     }
 
-    stapsher.addExtraInfo(extraInfo)
+    stapsher.addInfo(info)
   })
 
   it('returns early if recaptcha disabled', () => {

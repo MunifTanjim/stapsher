@@ -1,20 +1,14 @@
 const jwt = require('jsonwebtoken')
 const OctokitREST = require('@octokit/rest')
 
-const yaml = require('js-yaml')
+const { parseFile } = require('../helpers')
 
-const config = require('../../configs/server')
-
-const { throwError } = require('../Error')
-const { fetchInstallationId } = require('../GitHub/actions')
-
-const privateKey = config.get('github.app.privateKey')
+const { fetchInstallationId } = require('./actions')
 
 class GitHub {
-  constructor(info = {}, baseUrl) {
+  constructor({ info = {}, config }) {
     this.info = info
-
-    this.id = config.get('github.app.id')
+    this.config = config
 
     this.api = OctokitREST({
       timeout: 5000,
@@ -22,10 +16,8 @@ class GitHub {
         accept: 'application/vnd.github.v3+json',
         'user-agent': 'Stapsher agent'
       },
-      baseUrl
+      baseUrl: this.config.baseUrl
     })
-
-    this.privateKey = privateKey
 
     this.authedAsApp = false
     this.authedAsInstallation = false
@@ -44,9 +36,9 @@ class GitHub {
           {
             iat: Math.floor(new Date() / 1000), // issued at time
             exp: Math.floor(new Date() / 1000) + 60, // expiration time
-            iss: this.id // integration's github id
+            iss: this.config.id // integration's github id
           },
-          this.privateKey,
+          this.config.privateKey,
           {
             algorithm: 'RS256'
           }
@@ -110,7 +102,11 @@ class GitHub {
 
   async authenticate() {
     try {
-      return this._authAsInstallation()
+      if (this.config.type === 'app') {
+        return this._authAsInstallation()
+      } else if (this.config.type === 'bot') {
+        return true
+      }
     } catch (err) {
       throw err
     }
@@ -118,8 +114,6 @@ class GitHub {
 
   async readFile(path) {
     try {
-      let extension = path.split('.').pop()
-
       let { data } = await this.api.repos.getContent({
         owner: this.info.username,
         repo: this.info.repository,
@@ -129,33 +123,17 @@ class GitHub {
 
       let blob = Buffer.from(data.content, 'base64').toString()
 
-      let content
+      let extension = path.split('.').pop()
 
-      switch (extension.toLowerCase()) {
-        case 'json':
-          content = JSON.parse(blob)
-          break
-        case 'yaml':
-        case 'yml':
-          content = yaml.safeLoad(blob, 'utf8')
-          break
-        default:
-          throwError('UNSUPPORTED_EXTENSION', { extension }, 422)
-      }
-
-      return content
+      return parseFile(blob, extension)
     } catch (err) {
-      if (err instanceof SyntaxError) {
-        throwError('FILE_PARSE_FAILED', err, 422)
-      } else {
-        throw err
-      }
+      throw err
     }
   }
 
   async writeFile(path, commitMessage, content, branch = this.info.branch) {
     try {
-      let { data } = this.api.repos.createFile({
+      let { data } = await this.api.repos.createFile({
         owner: this.info.username,
         repo: this.info.repository,
         path,

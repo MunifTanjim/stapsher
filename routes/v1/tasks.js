@@ -13,22 +13,21 @@ router.post(
 
       await stapsher.authenticate()
 
-      stapsher.addExtraInfo({
+      stapsher.addInfo({
         clientIP: req.ip,
         clientUserAgent: req.get('user-agent'),
         clientReferrer: req.get('referrer'),
         recaptchaResponse: req.body['g-recaptcha-response']
       })
 
-      let fields = req.body.fields
-      let options = req.body.options
+      let { fields, options } = req.body
 
       let { redirect, ...result } = await stapsher.processNewEntry(
         fields,
         options
       )
 
-      if (redirect) res.redirect(redirect)
+      if (redirect) res.redirect(307, redirect)
       else res.send(result)
 
       incrementEntryCountCache()

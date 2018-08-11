@@ -1,11 +1,14 @@
+const isError = o => o instanceof Error
+const isObject = o => typeof o === 'object' && !isError(o)
+
 const serializers = {
   errorSerializer: {
-    print: o => JSON.stringify(o, null, 2),
-    test: o => o && typeof o === 'object'
+    print: o => JSON.stringify(o.toJSON ? o.toJSON() : o.toString(), null, 2),
+    test: o => o && isError(o)
   },
   objectSerializer: {
-    print: o => JSON.stringify(o.toJSON ? o.toJSON() : o, null, 2),
-    test: o => o && o instanceof Error
+    print: o => JSON.stringify(o, null, 2),
+    test: o => o && isObject(o)
   }
 }
 

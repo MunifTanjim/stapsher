@@ -28,11 +28,19 @@ const configSchema = {
     }
   },
   github: {
+    bot: {
+      accessToken: {
+        doc: 'GitHub Bot account Access Token',
+        format: String,
+        default: '',
+        env: 'GITHUB_BOT_ACCESS_TOKEN'
+      }
+    },
     app: {
       id: {
         doc: 'GitHub Application ID',
         format: String,
-        default: null,
+        default: '',
         env: 'GITHUB_APP_ID'
       },
       privateKey: {
@@ -44,7 +52,7 @@ const configSchema = {
       webhookSecret: {
         doc: 'Secret Token for GitHub Application Webhook',
         format: String,
-        default: null,
+        default: '',
         env: 'GITHUB_APP_WEBHOOK_SECRET'
       }
     }
@@ -54,7 +62,7 @@ const configSchema = {
       accessToken: {
         doc: 'GitLab Bot account Access Token',
         format: String,
-        default: null,
+        default: '',
         env: 'GITLAB_BOT_ACCESS_TOKEN'
       }
     }
@@ -64,6 +72,12 @@ const configSchema = {
     format: 'FilePath',
     default: null,
     env: 'RSA_PRIVATE_KEY'
+  },
+  scmProviders: {
+    doc: 'Array of configuration param (e.g.: `github.bot`) for SCM providers',
+    format: Array,
+    default: ['github.app', 'gitlab.bot'],
+    env: 'SCM_PROVIDERS'
   },
   stapsher: {
     cluster: {

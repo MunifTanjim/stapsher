@@ -46,7 +46,7 @@ describe('Stapsher:integration:new-entry', () => {
     expect(Stapsher.mock.calls[0][0]).toMatchSnapshot()
     expect(Stapsher.mock.instances[0].authenticate).toHaveBeenCalledTimes(1)
     expect(
-      Stapsher.mock.instances[0].addExtraInfo.mock.calls[0][0]
+      Stapsher.mock.instances[0].addInfo.mock.calls[0][0]
     ).toMatchSnapshot()
     expect(Stapsher.mock.instances[0].processNewEntry).toHaveBeenCalledWith(
       qs.parse(qs.stringify(body.fields)),

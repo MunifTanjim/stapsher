@@ -15,4 +15,5 @@ module.exports.getParameters = () => require('./info').parameters
 module.exports.getFields = () => require('./info').fields
 module.exports.getOptions = () => require('./info').options
 
+module.exports.getSampleConfig = () => require('./config').sampleConfig
 module.exports.readConfigFile = require('./config').readConfigFile

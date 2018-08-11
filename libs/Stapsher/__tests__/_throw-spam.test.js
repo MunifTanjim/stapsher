@@ -12,7 +12,7 @@ akismet.akismetCheckSpam = jest.fn()
 
 const Stapsher = require('../../Stapsher')
 
-const extraInfo = {
+const info = {
   clientIP: '127.0.0.1',
   clientUserAgent: 'TheMachine/1.0',
   clientReferrer: 'r007'
@@ -44,7 +44,7 @@ describe('libs/Stapsher:__throwSpam', () => {
 
     stapsher.rawFields = helpers.getFields()
 
-    stapsher.addExtraInfo(extraInfo)
+    stapsher.addInfo(info)
   })
 
   it('returns early if akismet disabled', () => {

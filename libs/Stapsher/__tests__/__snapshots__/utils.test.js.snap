@@ -1,15 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Stapsher:utils GetPlatformConstructor throws error if unsupported platform 1`] = `
-{
-  "code": "UNSUPPORTED_PLATFORM",
-  "cause": {
-    "platform": "facebook"
-  }
-}
-`;
-
-exports[`Stapsher:utils applyGeneratedFields generates new fields 1`] = `
+exports[`libs/Stapsher/utils applyGeneratedFields generates new fields 1`] = `
 {
   "author": "Samantha Groves",
   "email": "samantha@example.com",
@@ -20,7 +11,7 @@ exports[`Stapsher:utils applyGeneratedFields generates new fields 1`] = `
 }
 `;
 
-exports[`Stapsher:utils applyInternalFields adds internal fields 1`] = `
+exports[`libs/Stapsher/utils applyInternalFields adds internal fields 1`] = `
 {
   "author": "Samantha Groves",
   "email": "samantha@example.com",
@@ -30,9 +21,10 @@ exports[`Stapsher:utils applyInternalFields adds internal fields 1`] = `
 }
 `;
 
-exports[`Stapsher:utils applyTransforms throws error if hash algorithm is missing 1`] = `
+exports[`libs/Stapsher/utils applyTransforms throws error if hash algorithm is missing 1`] = `
 {
   "code": "MISSING_HASH_ALGORITHM",
+  "statusCode": 422,
   "cause": {
     "field": "email",
     "transform": "hash"
@@ -40,7 +32,7 @@ exports[`Stapsher:utils applyTransforms throws error if hash algorithm is missin
 }
 `;
 
-exports[`Stapsher:utils applyTransforms transforms fields 1`] = `
+exports[`libs/Stapsher/utils applyTransforms transforms fields 1`] = `
 {
   "author": "Samantha Groves",
   "email": "f948d4367793839ddc25da5d98c6166d",
@@ -49,7 +41,7 @@ exports[`Stapsher:utils applyTransforms transforms fields 1`] = `
 }
 `;
 
-exports[`Stapsher:utils generatePullRequestBody works as expected 1`] = `
+exports[`libs/Stapsher/utils generatePullRequestBody works as expected 1`] = `
 "pull_request_introduction
 | Field   | Value                          |
 | ------- | ------------------------------ |
@@ -59,7 +51,7 @@ exports[`Stapsher:utils generatePullRequestBody works as expected 1`] = `
 | content | We might as well be a symphony |"
 `;
 
-exports[`Stapsher:utils getContentDump returns dump for format 1`] = `
+exports[`libs/Stapsher/utils getContentDump returns dump for format 1`] = `
 "{
   \\"author\\": \\"Samantha Groves\\",
   \\"email\\": \\"samantha@example.com\\",
@@ -68,7 +60,7 @@ exports[`Stapsher:utils getContentDump returns dump for format 1`] = `
 }"
 `;
 
-exports[`Stapsher:utils getContentDump returns dump for format 2`] = `
+exports[`libs/Stapsher/utils getContentDump returns dump for format 2`] = `
 "author: Samantha Groves
 email: samantha@example.com
 url: 'https://samantha.example.com'
@@ -76,22 +68,24 @@ content: We might as well be a symphony
 "
 `;
 
-exports[`Stapsher:utils getFormatExtension throws error if unsupported format 1`] = `
+exports[`libs/Stapsher/utils getFormatExtension throws error if unsupported format 1`] = `
 {
   "code": "UNSUPPORTED_FORMAT",
+  "statusCode": 422,
   "cause": {
     "format": "snap"
   }
 }
 `;
 
-exports[`Stapsher:utils getNewFilePath uses extension 1`] = `"/test/path/data.comment.yml"`;
+exports[`libs/Stapsher/utils getNewFilePath uses extension 1`] = `"/test/path/data.comment.yml"`;
 
-exports[`Stapsher:utils getNewFilePath uses format to get fallback extension 1`] = `"/test/path/data.yaml"`;
+exports[`libs/Stapsher/utils getNewFilePath uses format to get fallback extension 1`] = `"/test/path/data.yaml"`;
 
-exports[`Stapsher:utils validateFields throws if fields not allowed 1`] = `
+exports[`libs/Stapsher/utils validateFields throws if fields not allowed 1`] = `
 {
   "code": "FIELDS_NOT_ALLOWED",
+  "statusCode": 400,
   "cause": {
     "notAllowedFields": [
       "rogue"
@@ -100,9 +94,10 @@ exports[`Stapsher:utils validateFields throws if fields not allowed 1`] = `
 }
 `;
 
-exports[`Stapsher:utils validateFields throws if missing required fields 1`] = `
+exports[`libs/Stapsher/utils validateFields throws if missing required fields 1`] = `
 {
   "code": "MISSING_REQUIRED_FIELDS",
+  "statusCode": 400,
   "cause": {
     "missingRequiredFields": [
       "email"

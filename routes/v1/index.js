@@ -1,10 +1,12 @@
 const router = require('express').Router()
 const asyncHandler = require('express-async-handler')
 
+const config = require('../../configs/server')
+
 const homeRouter = require('./home')
 const encryptRouter = require('./encrypt')
 const tasksRouter = require('./tasks')
-const { webhooksHandler } = require('../../libs/GitHub/webhooks')
+const { webhooksHandler } = require('../../libs/SCM/GitHub/webhooks')
 
 const baseUrlMap = {
   github: 'api.github.com',
@@ -29,6 +31,8 @@ router.use('/', homeRouter)
 router.use('/encrypt', encryptRouter)
 router.use('/:platform/:username/:repository/:branch/:entryType', tasksRouter)
 
-router.post('/github/webhook', asyncHandler(webhooksHandler))
+if (config.get('scmProviders').includes('github.app')) {
+  router.post('/github/webhook', asyncHandler(webhooksHandler))
+}
 
 module.exports = router

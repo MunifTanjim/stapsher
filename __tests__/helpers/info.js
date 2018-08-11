@@ -4,7 +4,8 @@ module.exports.parameters = {
   username: 'Harold',
   repository: 'TheMachine',
   branch: 'master',
-  entryType: 'comment'
+  entryType: 'comment',
+  platformBaseUrl: 'https://api.example.com'
 }
 
 module.exports.fields = {

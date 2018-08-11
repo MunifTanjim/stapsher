@@ -3,6 +3,7 @@
 exports[`libs/Stapsher:getConfig throws error if branch mismatches 1`] = `
 {
   "code": "BRANCH_MISMATCH",
+  "statusCode": 422,
   "cause": {
     "branch": {
       "url": "master",

@@ -7,7 +7,7 @@ const {
   getRepoDoc
 } = require('../Firebase')
 
-const { normalizeRepos } = require('../GitHub/webhooks/transformer')
+const { normalizeRepos } = require('../SCM/GitHub/webhooks/transformer')
 
 const { addRepoToCache } = require('../lowdb/actions')
 

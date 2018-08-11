@@ -1,22 +1,22 @@
-const config = require('../../../configs/server')
+const config = require('../../../../configs/server')
 
 const OctokitWebhooks = require('@octokit/webhooks')
 
-const logger = require('../../Logger')
-const { throwError } = require('../../Error')
+const logger = require('../../../Logger')
+const { throwError } = require('../../../Error')
 
 const {
   createInstallationOnCache,
   deleteInstallationFromCache,
   addReposToCache,
   removeReposFromCache
-} = require('../../lowdb/actions')
+} = require('../../../lowdb/actions')
 const {
   createInstallationOnStore,
   deleteInstallationFromStore,
   addReposToStore,
   removeReposFromStore
-} = require('../../Firebase/actions')
+} = require('../../../Firebase/actions')
 
 const { transformer } = require('./transformer')
 const { errorInfo } = require('./errors')

@@ -7,8 +7,8 @@ helpers.disableNetConnect()
 helpers.mockDate()
 helpers.mockUUIDv1()
 
-jest.mock('../../GitHub')
-const GitHub = require('../../GitHub')
+jest.mock('../../SCM/GitHub')
+const GitHub = require('../../SCM/GitHub')
 
 const utils = require('../utils')
 utils.trimObjectStringEntries = jest.fn(o => o)

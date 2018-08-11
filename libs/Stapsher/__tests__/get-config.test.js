@@ -3,8 +3,8 @@ const helpers = require('../../../__tests__/helpers')
 helpers.addSnapshotSerializers()
 helpers.disableNetConnect()
 
-jest.mock('../../GitHub')
-const GitHub = require('../../GitHub')
+jest.mock('../../SCM/GitHub')
+const GitHub = require('../../SCM/GitHub')
 
 const utils = require('../utils')
 utils.validateConfig = jest.fn()

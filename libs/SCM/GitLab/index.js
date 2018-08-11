@@ -1,31 +1,24 @@
-const yaml = require('js-yaml')
-
 const { default: GitLabAPI } = require('gitlab')
 
-const config = require('../../configs/server')
-
-const { throwError } = require('../Error')
+const { parseFile } = require('../helpers')
 
 class GitLab {
-  constructor(info = {}, baseUrl) {
+  constructor({ info = {}, config }) {
     this.info = info
-
-    this.accessToken = config.get('gitlab.bot.accessToken')
+    this.config = config
 
     this.api = new GitLabAPI({
-      url: baseUrl,
-      token: this.accessToken
+      url: this.config.baseUrl,
+      token: this.config.accessToken
     })
   }
 
   async authenticate() {
-    return true
+    if (this.config.type === 'bot') return true
   }
 
   async readFile(path) {
     try {
-      let extension = path.split('.').pop()
-
       let projectID = `${this.info.username}/${this.info.repository}`
 
       let data = await this.api.RepositoryFiles.show(
@@ -36,27 +29,11 @@ class GitLab {
 
       let blob = Buffer.from(data.content, 'base64').toString()
 
-      let content
+      let extension = path.split('.').pop()
 
-      switch (extension.toLowerCase()) {
-        case 'json':
-          content = JSON.parse(blob)
-          break
-        case 'yaml':
-        case 'yml':
-          content = yaml.safeLoad(blob, 'utf8')
-          break
-        default:
-          throwError('UNSUPPORTED_EXTENSION', { extension }, 422)
-      }
-
-      return content
+      return parseFile(blob, extension)
     } catch (err) {
-      if (err instanceof SyntaxError) {
-        throwError('FILE_PARSE_FAILED', err, 422)
-      } else {
-        throw err
-      }
+      throw err
     }
   }
 
@@ -64,10 +41,15 @@ class GitLab {
     try {
       let projectID = `${this.info.username}/${this.info.repository}`
 
-      let data = this.api.RepositoryFiles.create(projectID, path, branch, {
-        commit_message: commitMessage,
-        content
-      })
+      let data = await this.api.RepositoryFiles.create(
+        projectID,
+        path,
+        branch,
+        {
+          commit_message: commitMessage,
+          content
+        }
+      )
 
       return data
     } catch (err) {

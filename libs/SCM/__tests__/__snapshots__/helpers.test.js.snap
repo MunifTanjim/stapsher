@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`libs/SCM/helpers parseFile throws error if extension not supported 1`] = `
+{
+  "code": "UNSUPPORTED_EXTENSION",
+  "statusCode": 422,
+  "cause": {
+    "extension": "snap"
+  }
+}
+`;
+
+exports[`libs/SCM/helpers parseFile throws error if parse fails 1`] = `
+{
+  "code": "FILE_PARSE_FAILED",
+  "statusCode": 422,
+  "cause": "SyntaxError: Unexpected token c in JSON at position 1"
+}
+`;
