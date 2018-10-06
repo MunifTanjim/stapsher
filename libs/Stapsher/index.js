@@ -214,7 +214,7 @@ class Stapsher {
       )
 
       if (this.config.get('moderation')) {
-        let prBranch = `stapsher:${this.entryType}(${this._id})`
+        let prBranch = `stapsher.${this.entryType}(${this._id})`
 
         let prBody = generatePullRequestBody(
           this.fields,
