@@ -5,7 +5,7 @@ exports[`libs/Stapsher:processNewEntry creates pull request if moderation is on 
   "data/comments/0.7w0.z3r0.7w0.53v3n.yaml",
   "add new comment by Samantha Groves <Stapsher>",
   "author: Samantha Groves\\nemail: samantha@example.com\\nurl: 'https://samantha.example.com'\\ncontent: We might as well be a symphony\\n",
-  "stapsher:comment(7w0.z3r0.7w0.53v3n)",
+  "stapsher.comment(7w0.z3r0.7w0.53v3n)",
   "pull_request_body"
 ]
 `;
